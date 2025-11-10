@@ -32,7 +32,7 @@ namespace AppServidor
                 while((linea = reader.ReadLine()) != null)
                 {
                     Console.WriteLine("Cliente {0} : {1}", cliente.Client.RemoteEndPoint, linea);
-
+                    
                     writer.WriteLine("Recibido");
                 }
             }catch(Exception e)
