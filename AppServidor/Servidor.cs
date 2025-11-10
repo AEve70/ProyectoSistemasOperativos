@@ -32,9 +32,10 @@ namespace AppServidor
                 TcpClient cliente = await listener.AcceptTcpClientAsync();
                 Console.WriteLine("Cliente conectado: {0}", cliente.Client.RemoteEndPoint);
 
-                - = Task.Run(() => {
-                    Handler handler = new Handler(cliente)
-                  handler.Run();
+                _ = Task.Run(() =>
+                {
+                    Handler handler = new Handler(cliente);
+                    handler.Run();
                 });
             }
 
