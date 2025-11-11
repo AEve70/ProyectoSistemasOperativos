@@ -1,19 +1,15 @@
-﻿using System;
-
-public class SystemInfo
-{
-	public SystemInfo()
-	{
-        using System;
-        using System.Collections.Generic;
-        using System.Diagnostics;
-        using System.IO;
-        using System.Linq;
-        using System.Windows.Forms;
+﻿
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+     
 
 namespace AppServidor.Servicios
 {
-    public static class SysInfoService
+    public static class SystemInfo
     {
         public static object GetSysInfo()
         {
@@ -23,6 +19,7 @@ namespace AppServidor.Servicios
 
             return new
             {
+                //Probar si no lo tira todo de un solo o si deja elegir que hacer 
                 os_name = os.VersionString,
                 platform = os.Platform.ToString(),
                 version = os.Version.ToString(),
