@@ -107,7 +107,7 @@ namespace AppClienteControlador
             this.txt_ip.Name = "txt_ip";
             this.txt_ip.Size = new System.Drawing.Size(100, 20);
             this.txt_ip.TabIndex = 4;
-            this.txt_ip.Text = "127.0.0.0";
+            this.txt_ip.Text = "127.0.0.1";
             // 
             // txt_puerto
             // 
