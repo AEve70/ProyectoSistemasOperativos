@@ -142,19 +142,16 @@ namespace AppClienteControlador
                     case "GET_DISKS":
                         texto = "Unidades de disco detectadas:\n";
 
-                        var jsonDiscos = JsonSerializer.Serialize(respuesta.Datos);
-                        using (JsonDocument doc = JsonDocument.Parse(jsonDiscos))
+                        var discos = (JsonElement)respuesta.Datos;
+                        foreach (var disco in discos.EnumerateArray())
                         {
-                            foreach (var disco in doc.RootElement.EnumerateArray())
-                            {
-                                string name = disco.GetProperty("unidad").GetString();
-                                string formato = disco.GetProperty("formato").GetString();
-                                double total = disco.GetProperty("tamano_total_gb").GetDouble();
-                                double usado = disco.GetProperty("usado_gb").GetDouble();
-                                double libre = disco.GetProperty("disponible_gb").GetDouble();
+                            string name = disco.GetProperty("unidad").GetString();
+                            string formato = disco.GetProperty("formato").GetString();
+                            double total = disco.GetProperty("tamano_total_gb").GetDouble();
+                            double usado = disco.GetProperty("usado_gb").GetDouble();
+                            double libre = disco.GetProperty("disponible_gb").GetDouble();
 
-                                texto += $"\n{name} ({formato}) → Total: {total} GB | Usado: {usado} GB | Libre: {libre} GB";
-                            }
+                            texto += $"\n{name} ({formato}) → Total: {total} GB | Usado: {usado} GB | Libre: {libre} GB";
                         }
                         break;
 
@@ -169,16 +166,12 @@ namespace AppClienteControlador
                     case "GET_PROCESSES":
                         texto = "Procesos activos (máx. 200):\n";
 
-                        // Convertimos el objeto Datos a JSON y lo parseamos
-                        var jsonProcesos = JsonSerializer.Serialize(respuesta.Datos);
-                        using (JsonDocument doc = JsonDocument.Parse(jsonProcesos))
+                        var procesos = (JsonElement)respuesta.Datos;
+                        foreach (var proc in procesos.EnumerateArray())
                         {
-                            foreach (var proc in doc.RootElement.EnumerateArray())
-                            {
-                                string nombre = proc.GetProperty("ProcessName").GetString();
-                                int pid = proc.GetProperty("Id").GetInt32();
-                                texto += $"- {nombre} (PID {pid})\n";
-                            }
+                            string nombre = proc.GetProperty("name").GetString();
+                            int id = proc.GetProperty("id").GetInt32();
+                            texto += $"- {nombre} (PID {id})\n";
                         }
                         break;
 
