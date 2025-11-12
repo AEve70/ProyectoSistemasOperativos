@@ -64,7 +64,7 @@ namespace AppClienteControlador
             this.label1.Size = new System.Drawing.Size(23, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "IP: ";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
+      
             // 
             // label2
             // 
@@ -176,7 +176,7 @@ namespace AppClienteControlador
             this.label3.Size = new System.Drawing.Size(131, 15);
             this.label3.TabIndex = 7;
             this.label3.Text = "Informacion del Equipo";
-            this.label3.Click += new System.EventHandler(this.label3_Click);
+
             // 
             // cbx_datos
             // 
@@ -288,7 +288,6 @@ namespace AppClienteControlador
             this.Controls.Add(this.groupBox1);
             this.Name = "Form1";
             this.Text = "Cliente";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);

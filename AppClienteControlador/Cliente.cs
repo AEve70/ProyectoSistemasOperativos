@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Compartido;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AppClienteControlador
@@ -35,6 +37,33 @@ namespace AppClienteControlador
                 Console.WriteLine("Error: " + e);
                 return false;
             }
-        } 
+        }
+
+        public async Task Enviar(MensajesIO solicitud)
+        {
+            if (writer != null)
+            {
+                string json = JsonSerializer.Serialize(solicitud);
+                await writer.WriteLineAsync(json);
+            }
+        }
+
+        public async Task<MensajesIO> Recibir()
+        {
+            try
+            {
+                if (reader == null) return null;
+
+                string respuesta = await reader.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(respuesta)) return null;
+
+                return JsonSerializer.Deserialize<MensajesIO>(respuesta);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error al recibir: " + e.Message);
+                return null;
+            }
+        }
     }
 }

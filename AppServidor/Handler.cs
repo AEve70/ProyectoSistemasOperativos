@@ -3,7 +3,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using AppServidor.IO;
+using Compartido;
 using AppServidor.Servicios;
 
 namespace AppServidor
