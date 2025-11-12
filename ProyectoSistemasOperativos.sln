@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppClienteControlador", "Ap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compartido", "Compartido", "{30B6AD53-76B8-4E04-8C5C-A1D34405BB75}"
 	ProjectSection(SolutionItems) = preProject
-		AppServidor\IO\MensajesIO.cs = AppServidor\IO\MensajesIO.cs
+		MensajesIO.cs = MensajesIO.cs
 	EndProjectSection
 EndProject
 Global
