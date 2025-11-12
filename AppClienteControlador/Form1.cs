@@ -114,36 +114,38 @@ namespace AppClienteControlador
 
             try
             {
+                // Convertimos a JSON string para leerlo
                 var json = JsonSerializer.Serialize(respuesta.Datos);
-                var datos = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                JsonElement elemento = JsonSerializer.Deserialize<JsonElement>(json);
 
                 switch (comando)
                 {
                     case "GET_OS_INFO":
-                        texto = $"{datos["os_name"]} ({datos["platform"]})\nVersión: {datos["version"]}";
+                        texto = $"{elemento.GetProperty("os_name").GetString()} " +
+                                $"({elemento.GetProperty("platform").GetString()})\n" +
+                                $"Versión: {elemento.GetProperty("version").GetString()}";
                         break;
 
                     case "GET_MACHINE_NAME":
-                        texto = $"Nombre del equipo: {datos["machine_name"]}";
+                        texto = $"Nombre del equipo: {elemento.GetProperty("machine_name").GetString()}";
                         break;
 
                     case "GET_USER":
-                        texto = $"Usuario activo: {datos["user"]}";
+                        texto = $"Usuario activo: {elemento.GetProperty("user").GetString()}";
                         break;
 
                     case "GET_PROCESSOR":
-                        texto = $"{datos["processor"]}\nNúcleos lógicos: {datos["logical_processors"]}";
+                        texto = $"{elemento.GetProperty("processor").GetString()}\n" +
+                                $"Núcleos lógicos: {elemento.GetProperty("logical_processors").GetInt32()}";
                         break;
 
                     case "GET_RAM":
-                        texto = $"Memoria RAM total: {datos["ram_total_gb"]} GB";
+                        texto = $"Memoria RAM total: {elemento.GetProperty("ram_total_gb").GetDouble()} GB";
                         break;
 
                     case "GET_DISKS":
                         texto = "Unidades de disco detectadas:\n";
-
-                        var discos = (JsonElement)respuesta.Datos;
-                        foreach (var disco in discos.EnumerateArray())
+                        foreach (var disco in elemento.EnumerateArray())
                         {
                             string name = disco.GetProperty("unidad").GetString();
                             string formato = disco.GetProperty("formato").GetString();
@@ -156,18 +158,17 @@ namespace AppClienteControlador
                         break;
 
                     case "GET_RESOLUTION":
-                        texto = $"Resolución de pantalla: {datos["resolution"]}";
+                        texto = $"Resolución de pantalla: {elemento.GetProperty("resolution").GetString()}";
                         break;
 
                     case "GET_TIME":
-                        texto = $"{datos["datetime"]}\nZona horaria: {datos["timezone"]}";
+                        texto = $"{elemento.GetProperty("datetime").GetString()}\n" +
+                                $"Zona horaria: {elemento.GetProperty("timezone").GetString()}";
                         break;
 
                     case "GET_PROCESSES":
                         texto = "Procesos activos (máx. 200):\n";
-
-                        var procesos = (JsonElement)respuesta.Datos;
-                        foreach (var proc in procesos.EnumerateArray())
+                        foreach (var proc in elemento.EnumerateArray())
                         {
                             string nombre = proc.GetProperty("name").GetString();
                             int id = proc.GetProperty("id").GetInt32();
@@ -187,5 +188,6 @@ namespace AppClienteControlador
 
             return texto;
         }
+
     }
 }
