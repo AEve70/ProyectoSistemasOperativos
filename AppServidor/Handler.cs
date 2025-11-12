@@ -86,17 +86,32 @@ namespace AppServidor
         {
             switch (comando.ToUpper())
             {
-                case "GET_SYSINFO":
-                    return SystemInfo.GetSysInfo();
+                case "GET_OS_INFO":
+                    return SystemInfo.GetOSInfo();
+
+                case "GET_MACHINE_NAME":
+                    return SystemInfo.GetMachineName();
+
+                case "GET_USER":
+                    return SystemInfo.GetUserInfo();
+
+                case "GET_PROCESSOR":
+                    return SystemInfo.GetProcessorInfo();
+
+                case "GET_RAM":
+                    return SystemInfo.GetRAM();
 
                 case "GET_DISKS":
                     return SystemInfo.GetDisks();
 
-                case "GET_PROCESSES":
-                    return SystemInfo.GetProcesses();
+                case "GET_RESOLUTION":
+                    return SystemInfo.GetResolution();
 
                 case "GET_TIME":
                     return SystemInfo.GetTime();
+
+                case "GET_PROCESSES":
+                    return SystemInfo.GetProcesses();
 
                 case "PING":
                     return new { Pong = true, Time = DateTime.Now.ToString("T") };

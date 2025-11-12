@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppServidor", "AppServidor\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppClienteControlador", "AppClienteControlador\AppClienteControlador.csproj", "{81D044F7-9547-4844-993A-E883AB721338}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compartido", "Compartido", "{30B6AD53-76B8-4E04-8C5C-A1D34405BB75}"
+	ProjectSection(SolutionItems) = preProject
+		AppServidor\IO\MensajesIO.cs = AppServidor\IO\MensajesIO.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
