@@ -170,8 +170,8 @@ namespace AppClienteControlador
                         texto = "Procesos activos (máx. 200):\n";
                         foreach (var proc in elemento.EnumerateArray())
                         {
-                            string nombre = proc.GetProperty("name").GetString();
-                            int id = proc.GetProperty("id").GetInt32();
+                            string nombre = proc.GetProperty("ProcessName").GetString();
+                            int id = proc.GetProperty("Id").GetInt32();
                             texto += $"- {nombre} (PID {id})\n";
                         }
                         break;
