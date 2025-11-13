@@ -64,7 +64,6 @@ namespace AppClienteControlador
             this.label1.Size = new System.Drawing.Size(23, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "IP: ";
-      
             // 
             // label2
             // 
@@ -100,6 +99,7 @@ namespace AppClienteControlador
             this.btn_desconectar.TabIndex = 3;
             this.btn_desconectar.Text = "Desconectar";
             this.btn_desconectar.UseVisualStyleBackColor = true;
+            this.btn_desconectar.Click += new System.EventHandler(this.btn_desconectar_Click);
             // 
             // txt_ip
             // 
@@ -176,7 +176,6 @@ namespace AppClienteControlador
             this.label3.Size = new System.Drawing.Size(131, 15);
             this.label3.TabIndex = 7;
             this.label3.Text = "Informacion del Equipo";
-
             // 
             // cbx_datos
             // 

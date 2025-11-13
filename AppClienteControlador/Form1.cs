@@ -32,6 +32,9 @@ namespace AppClienteControlador
             InitializeComponent();
             client = new Cliente();
             llenarComboBox();
+            //Etiqueta que indica estado
+            label4.Text = "Desconectado";
+            label4.ForeColor = Color.Coral;
            
         }
 
@@ -189,5 +192,20 @@ namespace AppClienteControlador
             return texto;
         }
 
+        private void btn_desconectar_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            client.Desconectar();
+
+            label4.Text = "Desconectado";
+            label4.ForeColor = Color.Red;
+
+            richTextBox1.Clear();
+        }
     }
 }

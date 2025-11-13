@@ -65,5 +65,28 @@ namespace AppClienteControlador
                 return null;
             }
         }
+
+        public void Desconectar()
+        {
+            try
+            {
+                if (cliente != null)
+                {
+                    reader?.Close();
+                    writer?.Close();
+                    cliente.Close();
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Error al desconectar {0}", e);
+            }
+            finally
+            {
+                cliente = null;
+                reader = null;
+                writer = null;
+            }
+        }
     }
 }
