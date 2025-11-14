@@ -211,6 +211,7 @@ namespace AppClienteControlador
             this.btn_subirVolumen.Size = new System.Drawing.Size(36, 32);
             this.btn_subirVolumen.TabIndex = 11;
             this.btn_subirVolumen.UseVisualStyleBackColor = true;
+            this.btn_subirVolumen.Click += new System.EventHandler(this.btn_subirVolumen_Click);
             // 
             // btn_bajarVolumen
             // 
@@ -220,6 +221,7 @@ namespace AppClienteControlador
             this.btn_bajarVolumen.Size = new System.Drawing.Size(35, 33);
             this.btn_bajarVolumen.TabIndex = 12;
             this.btn_bajarVolumen.UseVisualStyleBackColor = true;
+            this.btn_bajarVolumen.Click += new System.EventHandler(this.btn_bajarVolumen_Click);
             // 
             // btn_silenciar
             // 
@@ -229,6 +231,7 @@ namespace AppClienteControlador
             this.btn_silenciar.Size = new System.Drawing.Size(37, 32);
             this.btn_silenciar.TabIndex = 13;
             this.btn_silenciar.UseVisualStyleBackColor = true;
+            this.btn_silenciar.Click += new System.EventHandler(this.btn_silenciar_Click);
             // 
             // btn_apagar
             // 

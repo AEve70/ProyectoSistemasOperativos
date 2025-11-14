@@ -12,7 +12,7 @@ namespace AppClienteControlador
     public partial class Form1 : Form
     {
         private Cliente client;
-
+        
         // Diccionario que vincula la acción del usuario con el comando real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
         {
@@ -35,7 +35,7 @@ namespace AppClienteControlador
             //Etiqueta que indica estado
             label4.Text = "Desconectado";
             label4.ForeColor = Color.Coral;
-           
+            
         }
 
        private void llenarComboBox()
@@ -83,12 +83,14 @@ namespace AppClienteControlador
                 return;
             }
 
+            //Validar que haya seleccionado una opcion del combo box
             if (cbx_datos.SelectedItem == null)
             {
                 MessageBox.Show("Seleccione una opción antes de consultar.");
                 return;
             }
 
+            //El usuario elije y luego se manda la solicitud al servidor, si el servidor responde se recibe una repsuesta y se muestra en el text box
             string eleccion = cbx_datos.SelectedItem.ToString();
             string comando = comandos[eleccion];
 
@@ -107,6 +109,54 @@ namespace AppClienteControlador
             }
         }
 
+        private async void btn_subirVolumen_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var solicitud = new MensajesIO("VOL_UP", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta?.Mensaje ?? "OK"; 
+        }
+
+        private async void btn_bajarVolumen_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var solicitud = new MensajesIO("VOL_DOWN", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta?.Mensaje ?? "OK";
+        }
+
+        private async void btn_silenciar_Click(object sender, EventArgs e)
+        {
+            if (client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var solicitud = new MensajesIO("MUTE", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta?.Mensaje ?? "OK";
+        }
+
+
+
+        //Se usa para traducir respuestas complejas es decir multilinea
         private string TraducirRespuesta(MensajesIO respuesta)
         {
             if (respuesta == null || respuesta.Datos == null)
@@ -207,5 +257,7 @@ namespace AppClienteControlador
 
             richTextBox1.Clear();
         }
+
+      
     }
 }

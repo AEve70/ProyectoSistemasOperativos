@@ -7,7 +7,8 @@ using Compartido;
 using AppServidor.Servicios;
 
 namespace AppServidor
-{
+{   // Handler es una clase que se encarga de la logica del servidor
+    //Gestiona las solicitudes del cliente y las realiza 
     public class Handler
     {
         private readonly TcpClient cliente;
@@ -21,21 +22,22 @@ namespace AppServidor
         {
             try
             {
+                //Para el envio de datos por el socket
                 using NetworkStream stream = cliente.GetStream();
                 using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
                 using StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                string linea;
+                string linea; // Lee lo que envia el cliente
 
                 while ((linea = reader.ReadLine()) != null)
                 {
                     Console.WriteLine($"Cliente {cliente.Client.RemoteEndPoint}: {linea}");
 
-                    MensajesIO solicitud;
+                    MensajesIO solicitud; //JSON para gestionar la comunicacion, mas en caso de varias lineas
 
                     try
                     {
-                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea);
+                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea); // Convierte la linea a formato JSON
                     }
                     catch
                     {
@@ -64,7 +66,7 @@ namespace AppServidor
                         respuesta = new MensajesIO(solicitud.Comando, false, null, ex.Message, "Servidor");
                     }
 
-                    // enviar respuesta
+                    // enviar respuesta en formato JSON 
                     string json = JsonSerializer.Serialize(respuesta);
                     writer.WriteLine(json);
                     Console.WriteLine($"→ Enviado a {cliente.Client.RemoteEndPoint}: {json}");
@@ -81,7 +83,7 @@ namespace AppServidor
             }
         }
 
-        // este método ejecuta los comandos recibidos
+        // Metodo que procesa los comandos, como todos son distintos se devuelve un Object
         private object ProcesarComando(string comando)
         {
             switch (comando.ToUpper())
@@ -116,6 +118,17 @@ namespace AppServidor
                 case "PING":
                     return new { Pong = true, Time = DateTime.Now.ToString("T") };
 
+                case "VOL_UP":
+                   AccionesVolumen.SubirVolumen();
+                    return "Volumen subido";
+
+                case "VOL_DOWN":
+                    AccionesVolumen.BajarVolumen();
+                    return "Volumen bajado";
+
+                case "MUTE":
+                    AccionesVolumen.Silenciar();
+                    return "Silenciado";
                 default:
                     throw new InvalidOperationException($"Comando no reconocido: {comando}");
             }
