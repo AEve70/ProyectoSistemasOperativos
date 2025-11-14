@@ -141,7 +141,7 @@ namespace AppClienteControlador
 
         private async void btn_silenciar_Click(object sender, EventArgs e)
         {
-            if (client.Conectado)
+            if (!client.Conectado)
             {
                 MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
