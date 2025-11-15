@@ -12,7 +12,20 @@ namespace AppClienteControlador
     public partial class Form1 : Form
     {
         private Cliente client;
-        
+
+        bool ControlRemoto;
+        public Form1()
+        {
+            InitializeComponent();
+            client = new Cliente();
+            llenarComboBox();
+            //Etiqueta que indica estado
+            label4.Text = "Desconectado";
+            label4.ForeColor = Color.Coral;
+            ControlRemoto = false;
+            
+        }
+
         // Diccionario que vincula la acción del usuario con el comando real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
         {
@@ -27,18 +40,7 @@ namespace AppClienteControlador
             {"Procesos en Ejecución", "GET_PROCESSES" }
         };
 
-        public Form1()
-        {
-            InitializeComponent();
-            client = new Cliente();
-            llenarComboBox();
-            //Etiqueta que indica estado
-            label4.Text = "Desconectado";
-            label4.ForeColor = Color.Coral;
-            
-        }
-
-       private void llenarComboBox()
+        private void llenarComboBox()
         {
             cbx_datos.Items.Clear();
             cbx_datos.Items.AddRange(comandos.Keys.ToArray());
@@ -294,5 +296,76 @@ namespace AppClienteControlador
             var solicitud = new MensajesIO("LOGOUT", true, null, "", "Cliente");
             await client.Enviar(solicitud);
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexión activa.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            ControlRemoto = true;
+
+            // empezar a enviar coordenadas
+            timer_mouse.Interval = 40;
+            timer_mouse.Start();
+
+            // empezar a capturar clics
+            this.MouseDown += Form_MouseDown;
+
+            richTextBox1.Text = "Control remoto ACTIVADO.";
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ControlRemoto = false;
+
+            timer_mouse.Stop();
+            this.MouseDown -= Form_MouseDown;
+
+            richTextBox1.Text = "Control remoto DETENIDO.";
+        }
+
+        private async void timer_mouse_Tick(object sender, EventArgs e)
+        {
+
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            // posición actual del mouse en el cliente
+            Point pos = Cursor.Position;
+
+            var solicitud = new MensajesIO(
+                "MOVE_MOUSE",
+                true,
+                new { x = pos.X, y = pos.Y },
+                "",
+                "Cliente"
+            );
+
+            await client.Enviar(solicitud);
+        }
+
+        //Metodo para capturar los clics naturales del usuario 
+        private async void Form_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            MensajesIO solicitud;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                solicitud = new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente");
+                await client.Enviar(solicitud);
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                solicitud = new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente");
+                await client.Enviar(solicitud);
+            }
+        }
+
     }
 }

@@ -29,6 +29,7 @@ namespace AppClienteControlador
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -51,6 +52,8 @@ namespace AppClienteControlador
             this.btn_reiniciar = new System.Windows.Forms.Button();
             this.btn_cerrarSesion = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.timer_mouse = new System.Windows.Forms.Timer(this.components);
+            this.btn_detenerMouse = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -105,7 +108,7 @@ namespace AppClienteControlador
             // 
             this.txt_ip.Location = new System.Drawing.Point(56, 31);
             this.txt_ip.Name = "txt_ip";
-            this.txt_ip.Size = new System.Drawing.Size(100, 20);
+            this.txt_ip.Size = new System.Drawing.Size(100, 22);
             this.txt_ip.TabIndex = 4;
             this.txt_ip.Text = "127.0.0.1";
             // 
@@ -113,7 +116,7 @@ namespace AppClienteControlador
             // 
             this.txt_puerto.Location = new System.Drawing.Point(219, 31);
             this.txt_puerto.Name = "txt_puerto";
-            this.txt_puerto.Size = new System.Drawing.Size(59, 20);
+            this.txt_puerto.Size = new System.Drawing.Size(59, 22);
             this.txt_puerto.TabIndex = 5;
             this.txt_puerto.Text = "8000";
             // 
@@ -127,6 +130,7 @@ namespace AppClienteControlador
             this.groupBox1.Controls.Add(this.btn_conectar);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox1.Location = new System.Drawing.Point(3, 2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(456, 100);
@@ -166,6 +170,7 @@ namespace AppClienteControlador
             this.button1.Text = "Controlar";
             this.button1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label3
             // 
@@ -265,6 +270,7 @@ namespace AppClienteControlador
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.btn_detenerMouse);
             this.groupBox2.Controls.Add(this.button1);
             this.groupBox2.Controls.Add(this.btn_silenciar);
             this.groupBox2.Controls.Add(this.btn_reiniciar);
@@ -272,12 +278,32 @@ namespace AppClienteControlador
             this.groupBox2.Controls.Add(this.btn_bajarVolumen);
             this.groupBox2.Controls.Add(this.btn_subirVolumen);
             this.groupBox2.Controls.Add(this.btn_apagar);
+            this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox2.Location = new System.Drawing.Point(7, 281);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(452, 53);
             this.groupBox2.TabIndex = 17;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Acciones";
+            // 
+            // timer_mouse
+            // 
+            this.timer_mouse.Interval = 40;
+            this.timer_mouse.Tick += new System.EventHandler(this.timer_mouse_Tick);
+            // 
+            // btn_detenerMouse
+            // 
+            this.btn_detenerMouse.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_detenerMouse.Image = ((System.Drawing.Image)(resources.GetObject("btn_detenerMouse.Image")));
+            this.btn_detenerMouse.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btn_detenerMouse.Location = new System.Drawing.Point(228, 15);
+            this.btn_detenerMouse.Name = "btn_detenerMouse";
+            this.btn_detenerMouse.Size = new System.Drawing.Size(88, 32);
+            this.btn_detenerMouse.TabIndex = 17;
+            this.btn_detenerMouse.Text = "Detener";
+            this.btn_detenerMouse.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btn_detenerMouse.UseVisualStyleBackColor = true;
+            this.btn_detenerMouse.Click += new System.EventHandler(this.button2_Click);
             // 
             // Form1
             // 
@@ -324,6 +350,8 @@ namespace AppClienteControlador
         private System.Windows.Forms.Button btn_reiniciar;
         private System.Windows.Forms.Button btn_cerrarSesion;
         private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button btn_detenerMouse;
+        private System.Windows.Forms.Timer timer_mouse;
     }
 
 }
