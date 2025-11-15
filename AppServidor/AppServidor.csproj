@@ -83,6 +83,7 @@
     <Compile Include="Handler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Servicios\AccionesSistema.cs" />
     <Compile Include="Servicios\AccionesControl.cs" />
     <Compile Include="Servicios\AccionesVolumen.cs" />
     <Compile Include="Servicios\SystemInfo.cs" />

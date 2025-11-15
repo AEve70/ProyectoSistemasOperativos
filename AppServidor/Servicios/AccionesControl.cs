@@ -1,32 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace AppServidor.Servicios
 {
-    //Clase para las acciones de apagar, reiniciar, cerrar sesion, mover el mouse
     public static class AccionesControl
     {
-        public static void Apagar()
+        // Usar libreria externa para controlar funciones de windows
+        [DllImport("user32.dll")]
+        private static extern bool SetCursorPos(int X, int Y); //Metodo que mueve el cursor del mouse del sistema 
+        [DllImport("user32.dll")]
+        private static extern void mouse_event(uint flags, uint dx, uint dy, uint data, int extraInfo);
+
+        //Flags para que Windows identifique que accion se quiere hacer con respecto al mouse
+        private const uint LEFTDOWN = 0x0002;
+        private const uint LEFTUP = 0x0004;
+        private const uint RIGHTDOWN = 0x0008;
+        private const uint RIGHTUP = 0x0010;
+
+        //Metodo para mover el cursor
+        public static void Mover(int x, int y)
         {
-            Process.Start("shutdown", "/s /t 0"); // Ejecuta el comando shutdown inmediatamente
+            SetCursorPos(x, y);
         }
 
-        public static void Reiniciar()
+        //Metodos de Click
+        public static void ClickIzquierdo()
         {
-            Process.Start("shutdown", "/r /t 0");
+            //Mouse event necesita como parametro la flag para saber que hacer
+            mouse_event(LEFTDOWN, 0, 0, 0, 0);
+            mouse_event(LEFTUP, 0, 0, 0, 0);
         }
 
-        public static void CerrarSesion()
+        public static void ClickDerecho()
         {
-            Process.Start("shutdown", "/l");
+            mouse_event(RIGHTDOWN, 0, 0, 0, 0);
+            mouse_event(RIGHTUP, 0, 0, 0, 0);
         }
 
-
-
-        
+        public static void DobleClick()
+        {
+            ClickIzquierdo();
+            ClickDerecho();
+        }
     }
 }

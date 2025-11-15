@@ -22,22 +22,21 @@ namespace AppServidor
         {
             try
             {
-                //Para el envio de datos por el socket
                 using NetworkStream stream = cliente.GetStream();
                 using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
                 using StreamWriter writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
 
-                string linea; // Lee lo que envia el cliente
+                string linea;
 
                 while ((linea = reader.ReadLine()) != null)
                 {
                     Console.WriteLine($"Cliente {cliente.Client.RemoteEndPoint}: {linea}");
 
-                    MensajesIO solicitud; //JSON para gestionar la comunicacion, mas en caso de varias lineas
+                    MensajesIO solicitud;
 
                     try
                     {
-                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea); // Convierte la linea a formato JSON
+                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea);
                     }
                     catch
                     {
@@ -46,7 +45,6 @@ namespace AppServidor
                         continue;
                     }
 
-                    // validar el comando
                     if (solicitud == null || string.IsNullOrWhiteSpace(solicitud.Comando))
                     {
                         var error = new MensajesIO("ERROR", false, null, "Solicitud vacía o sin comando", "Servidor");
@@ -54,19 +52,20 @@ namespace AppServidor
                         continue;
                     }
 
-                    // procesar comando
                     MensajesIO respuesta;
+
                     try
                     {
-                        object datos = ProcesarComando(solicitud.Comando);
-                        respuesta = new MensajesIO(solicitud.Comando, true, datos, "OK", "Servidor");
+                        
+                        object datosRespuesta = ProcesarComando(solicitud.Comando, solicitud.Datos);
+
+                        respuesta = new MensajesIO(solicitud.Comando, true, datosRespuesta, "OK", "Servidor");
                     }
                     catch (Exception ex)
                     {
                         respuesta = new MensajesIO(solicitud.Comando, false, null, ex.Message, "Servidor");
                     }
 
-                    // enviar respuesta en formato JSON 
                     string json = JsonSerializer.Serialize(respuesta);
                     writer.WriteLine(json);
                     Console.WriteLine($"→ Enviado a {cliente.Client.RemoteEndPoint}: {json}");
@@ -84,7 +83,7 @@ namespace AppServidor
         }
 
         // Metodo que procesa los comandos, como todos son distintos se devuelve un Object
-        private object ProcesarComando(string comando)
+        private object ProcesarComando(string comando, object datos)
         {
             switch (comando.ToUpper())
             {
@@ -115,11 +114,8 @@ namespace AppServidor
                 case "GET_PROCESSES":
                     return SystemInfo.GetProcesses();
 
-                case "PING":
-                    return new { Pong = true, Time = DateTime.Now.ToString("T") };
-
                 case "VOL_UP":
-                   AccionesVolumen.SubirVolumen();
+                    AccionesVolumen.SubirVolumen();
                     return "Volumen subido";
 
                 case "VOL_DOWN":
@@ -131,19 +127,35 @@ namespace AppServidor
                     return "Silenciado";
 
                 case "SHUTDOWN":
-                    AccionesControl.Apagar();
+                    AccionesSistema.Apagar();
                     return "Apagando equipo...";
 
                 case "REBOOT":
-                    AccionesControl.Reiniciar();
+                    AccionesSistema.Reiniciar();
                     return "Reiniciando el equipo...";
 
                 case "LOGOUT":
-                    AccionesControl.CerrarSesion();
-                    return "Cerrando Sesion...";
+                    AccionesSistema.CerrarSesion();
+                    return "Cerrando sesión...";
+
+                case "MOVE_MOUSE":
+                    {
+                        if (datos == null)
+                            throw new Exception("Coordenadas no enviadas.");
+
+                        JsonElement elem = (JsonElement)datos;
+                        int x = elem.GetProperty("x").GetInt32();
+                        int y = elem.GetProperty("y").GetInt32();
+
+                        AccionesControl.Mover(x, y);
+                        return $"Cursor movido a ({x},{y})";
+                    }
+
                 default:
                     throw new InvalidOperationException($"Comando no reconocido: {comando}");
             }
         }
+
     }
+}
 }
