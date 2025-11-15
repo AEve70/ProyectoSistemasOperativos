@@ -161,7 +161,7 @@ namespace AppClienteControlador
             this.button1.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.button1.Location = new System.Drawing.Point(130, 15);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(91, 28);
+            this.button1.Size = new System.Drawing.Size(91, 32);
             this.button1.TabIndex = 8;
             this.button1.Text = "Controlar";
             this.button1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -241,6 +241,7 @@ namespace AppClienteControlador
             this.btn_apagar.Size = new System.Drawing.Size(33, 32);
             this.btn_apagar.TabIndex = 14;
             this.btn_apagar.UseVisualStyleBackColor = true;
+            this.btn_apagar.Click += new System.EventHandler(this.btn_apagar_Click);
             // 
             // btn_reiniciar
             // 
@@ -250,6 +251,7 @@ namespace AppClienteControlador
             this.btn_reiniciar.Size = new System.Drawing.Size(33, 30);
             this.btn_reiniciar.TabIndex = 15;
             this.btn_reiniciar.UseVisualStyleBackColor = true;
+            this.btn_reiniciar.Click += new System.EventHandler(this.btn_reiniciar_Click);
             // 
             // btn_cerrarSesion
             // 
@@ -259,6 +261,7 @@ namespace AppClienteControlador
             this.btn_cerrarSesion.Size = new System.Drawing.Size(39, 32);
             this.btn_cerrarSesion.TabIndex = 16;
             this.btn_cerrarSesion.UseVisualStyleBackColor = true;
+            this.btn_cerrarSesion.Click += new System.EventHandler(this.btn_cerrarSesion_Click);
             // 
             // groupBox2
             // 

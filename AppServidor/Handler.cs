@@ -129,6 +129,18 @@ namespace AppServidor
                 case "MUTE":
                     AccionesVolumen.Silenciar();
                     return "Silenciado";
+
+                case "SHUTDOWN":
+                    AccionesControl.Apagar();
+                    return "Apagando equipo...";
+
+                case "REBOOT":
+                    AccionesControl.Reiniciar();
+                    return "Reiniciando el equipo...";
+
+                case "LOGOUT":
+                    AccionesControl.CerrarSesion();
+                    return "Cerrando Sesion...";
                 default:
                     throw new InvalidOperationException($"Comando no reconocido: {comando}");
             }

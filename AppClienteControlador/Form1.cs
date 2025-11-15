@@ -258,6 +258,41 @@ namespace AppClienteControlador
             richTextBox1.Clear();
         }
 
-      
+        private async void btn_apagar_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var solicitud = new MensajesIO("SHUTDOWN", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+        }
+
+        private async void btn_reiniciar_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var solicitud = new MensajesIO("REBOOT", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+
+        }
+
+        private async void btn_cerrarSesion_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var solicitud = new MensajesIO("LOGOUT", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+        }
     }
 }
