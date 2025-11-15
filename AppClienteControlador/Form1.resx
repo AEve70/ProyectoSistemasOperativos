@@ -204,15 +204,41 @@
         hQfNkXllyJHZJd213gxOhjETn+tHsyAvYH+9aQqDP1v+ArY9SEuR76+jAAAAAElFTkSuQmCC
 </value>
   </data>
+  <data name="btn_message.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAAAFmSURBVEhLzZXLK0VRFMZ/5Z3yGDFQpGTqmZGZDI2UDKWE
+        mZSMJIxEBkz8GTKQyCOlKJlIBiiPZGRupq/Wue1W3eu8BvdXu7PP9+11HuvstQ6UGRU2cqMXWAeugQ/g
+        04bm0taAHh8Uhz7gBLgB5oAuv8C0eeAWOE5yo0XgCRjxRglGLWbBG55V4Aho8EYMFKPYFW9ETACXQJ03
+        EqDYK2DcG43AC9DhjRR0As8+C7PAdihkZAeYCYUz2zl5MQCchoL2dWUoZKQKeAuF7/AkJ77Ckx+gNhQy
+        ojd4D4WLJJUYA7UYfdcC08BuKGRky3ZmARXIK9AWiilpt5pq8saYdchqbySgBjgHJr0RofZ7aJWdlHrg
+        ANjwhke5ewBavFGCYYtZ9kYx7oLvoZS1Ol/In7IGqbQM+gXFUOC9zZvtZ6Jer339aHMVkR5iExhy8f+y
+        Z3lcsgvpGKEOqVynph/4tT6yD3T7BWXHHzqqPFk4cTIFAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="btn_screenshot.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAAAFYSURBVFhH7ZY9L0VBEIYfREEUBIVeRTR6Fb3EV6HjJhKd
+        P0AntApCI0FD5+/4NeRN5iRrssec3UREsk8yuffM7Mx5z9w9cxcajUY/Y8AxcA88mG1bbD/xdSaf0JrO
+        p9wjq1WMbn4KzCU2ZTF9pv6fYqohEcVI/Yx3VqAaqlWMWjjtnRWohmoV8+cCdoBJ76xANVTr/1HSAe38
+        c+Da7ApY8YtKGbIHloBN4BH4dPYBbAFrPmkokQB1SDc+tCHUZxfAjU8eQiTgrWDCXQLL3hkRCXhx1/rN
+        b60rey52Amw4X0i0CVMBuvkrMG85Z2YdVQIiUgF68oXkWkhQR5WAkg6o7X7tMzBu36sElOyBXdfyVTd+
+        f12AkAC9GU+WO5vEqgREf8deQEfu1ZS4de+M0CGi70AiNHIPMgcTb5qE75k9EqInkYjckUxMACPgLonn
+        TJNwMclrNBrf+AK5/kFa1ZHGPgAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="btn_detenerMouse.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EwAACxMBAJqcGAAAAEtJREFUSEtjYBgFJAI2BgYGTQoxyAycAKTgKwMDw1kyMUgvyAycACQJUkguAOkd
+        tQAvGLWAIBi1gCAYtYAgGBwW0LS4pnmFMwowAAAWdjsF2xy2cQAAAABJRU5ErkJggg==
+</value>
+  </data>
   <metadata name="timer_mouse.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="btn_detenerMouse.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAACxMAAAsTAQCanBgAAABLSURBVEhLY2AYBSQCNgYGBk0KMcgMnACk4CsDA8NZMjFI
-        L8gMnAAkCVJILgDpHbUALxi1gCAYtYAgGLWAIBgcFtC0uKZ5hTMKMAAAFnY7BdsctnEAAAAASUVORK5C
-        YII=
-</value>
-  </data>
+  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>25</value>
+  </metadata>
 </root>

@@ -52,10 +52,14 @@ namespace AppClienteControlador
             this.btn_reiniciar = new System.Windows.Forms.Button();
             this.btn_cerrarSesion = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.timer_mouse = new System.Windows.Forms.Timer(this.components);
             this.btn_detenerMouse = new System.Windows.Forms.Button();
+            this.timer_mouse = new System.Windows.Forms.Timer(this.components);
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btn_screenshot = new System.Windows.Forms.Button();
+            this.btn_message = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -163,7 +167,7 @@ namespace AppClienteControlador
             this.button1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.Image = ((System.Drawing.Image)(resources.GetObject("button1.Image")));
             this.button1.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.button1.Location = new System.Drawing.Point(130, 15);
+            this.button1.Location = new System.Drawing.Point(6, 13);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(91, 32);
             this.button1.TabIndex = 8;
@@ -270,8 +274,8 @@ namespace AppClienteControlador
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.btn_detenerMouse);
-            this.groupBox2.Controls.Add(this.button1);
+            this.groupBox2.Controls.Add(this.btn_message);
+            this.groupBox2.Controls.Add(this.btn_screenshot);
             this.groupBox2.Controls.Add(this.btn_silenciar);
             this.groupBox2.Controls.Add(this.btn_reiniciar);
             this.groupBox2.Controls.Add(this.btn_cerrarSesion);
@@ -286,31 +290,61 @@ namespace AppClienteControlador
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Acciones";
             // 
-            // timer_mouse
-            // 
-            this.timer_mouse.Interval = 40;
-            this.timer_mouse.Tick += new System.EventHandler(this.timer_mouse_Tick);
-            // 
             // btn_detenerMouse
             // 
             this.btn_detenerMouse.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_detenerMouse.Image = ((System.Drawing.Image)(resources.GetObject("btn_detenerMouse.Image")));
             this.btn_detenerMouse.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btn_detenerMouse.Location = new System.Drawing.Point(228, 15);
+            this.btn_detenerMouse.Location = new System.Drawing.Point(103, 13);
             this.btn_detenerMouse.Name = "btn_detenerMouse";
-            this.btn_detenerMouse.Size = new System.Drawing.Size(88, 32);
+            this.btn_detenerMouse.Size = new System.Drawing.Size(120, 32);
             this.btn_detenerMouse.TabIndex = 17;
-            this.btn_detenerMouse.Text = "Detener";
+            this.btn_detenerMouse.Text = "Detener Control";
             this.btn_detenerMouse.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.btn_detenerMouse.UseVisualStyleBackColor = true;
             this.btn_detenerMouse.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // timer_mouse
+            // 
+            this.timer_mouse.Interval = 40;
+            this.timer_mouse.Tick += new System.EventHandler(this.timer_mouse_Tick);
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.btn_detenerMouse);
+            this.groupBox3.Controls.Add(this.button1);
+            this.groupBox3.Location = new System.Drawing.Point(12, 340);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(447, 45);
+            this.groupBox3.TabIndex = 18;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Control Remoto";
+            // 
+            // btn_screenshot
+            // 
+            this.btn_screenshot.Image = ((System.Drawing.Image)(resources.GetObject("btn_screenshot.Image")));
+            this.btn_screenshot.Location = new System.Drawing.Point(168, 14);
+            this.btn_screenshot.Name = "btn_screenshot";
+            this.btn_screenshot.Size = new System.Drawing.Size(45, 31);
+            this.btn_screenshot.TabIndex = 17;
+            this.btn_screenshot.UseVisualStyleBackColor = true;
+            // 
+            // btn_message
+            // 
+            this.btn_message.Image = ((System.Drawing.Image)(resources.GetObject("btn_message.Image")));
+            this.btn_message.Location = new System.Drawing.Point(130, 15);
+            this.btn_message.Name = "btn_message";
+            this.btn_message.Size = new System.Drawing.Size(35, 30);
+            this.btn_message.TabIndex = 18;
+            this.btn_message.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
-            this.ClientSize = new System.Drawing.Size(471, 335);
+            this.ClientSize = new System.Drawing.Size(471, 397);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.btn_consultar);
@@ -322,6 +356,7 @@ namespace AppClienteControlador
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -352,6 +387,9 @@ namespace AppClienteControlador
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button btn_detenerMouse;
         private System.Windows.Forms.Timer timer_mouse;
+        private System.Windows.Forms.Button btn_message;
+        private System.Windows.Forms.Button btn_screenshot;
+        private System.Windows.Forms.GroupBox groupBox3;
     }
 
 }
