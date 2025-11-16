@@ -37,7 +37,7 @@ namespace AppClienteControlador
             // 
             this.pb_captura.Location = new System.Drawing.Point(3, 2);
             this.pb_captura.Name = "pb_captura";
-            this.pb_captura.Size = new System.Drawing.Size(466, 335);
+            this.pb_captura.Size = new System.Drawing.Size(967, 438);
             this.pb_captura.TabIndex = 0;
             this.pb_captura.TabStop = false;
             this.pb_captura.Click += new System.EventHandler(this.pb_captura_Click);
@@ -45,7 +45,7 @@ namespace AppClienteControlador
             // FormScrenshot
             // 
             this.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.ClientSize = new System.Drawing.Size(471, 336);
+            this.ClientSize = new System.Drawing.Size(965, 441);
             this.Controls.Add(this.pb_captura);
             this.Name = "FormScrenshot";
             this.Text = "Captura Tomada";

@@ -13,6 +13,7 @@ namespace AppClienteControlador
         public FormScrenshot()
         {
             InitializeComponent();
+            pb_captura.SizeMode = PictureBoxSizeMode.Zoom;
         }
 
         private void FormScrenshot_Load(object sender, EventArgs e)
