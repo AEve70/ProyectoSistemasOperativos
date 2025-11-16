@@ -1,10 +1,7 @@
 ﻿using Compartido;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -16,10 +13,11 @@ namespace AppClienteControlador
         private StreamReader reader;
         private StreamWriter writer;
 
+        public bool Conectado => cliente != null && cliente.Connected;
 
-        public bool Conectado => cliente?.Connected ?? false; //Expresion remplaza if
+        public event Action ConexionCerrada;
 
-        public async Task<bool> Conectar(String ip, int puerto)
+        public async Task<bool> Conectar(string ip, int puerto)
         {
             try
             {
@@ -27,12 +25,13 @@ namespace AppClienteControlador
                 await cliente.ConnectAsync(ip, puerto);
 
                 NetworkStream stream = cliente.GetStream();
-                writer = new StreamWriter(stream) {AutoFlush = true };
+                writer = new StreamWriter(stream) { AutoFlush = true };
                 reader = new StreamReader(stream);
 
                 Console.WriteLine("Conectado al servidor");
                 return true;
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine("Error: " + e);
                 return false;
@@ -61,20 +60,34 @@ namespace AppClienteControlador
             await Enviar(solicitud);
             return await Recibir();
         }
+
         public async Task<MensajesIO> Recibir()
         {
             try
             {
-                if (reader == null) return null;
+                if (reader == null)
+                {
+                    ConexionCerrada?.Invoke();
+                    return null;
+                }
 
                 string respuesta = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(respuesta)) return null;
+
+                // 🔥 Si el servidor se cayó: apagado / reinicio / logout / cierre app
+                if (respuesta == null)
+                {
+                    ConexionCerrada?.Invoke();
+                    return null;
+                }
+
+                if (string.IsNullOrWhiteSpace(respuesta))
+                    return null;
 
                 return JsonSerializer.Deserialize<MensajesIO>(respuesta);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine("Error al recibir: " + e.Message);
+                ConexionCerrada?.Invoke();
                 return null;
             }
         }
@@ -90,9 +103,9 @@ namespace AppClienteControlador
                     cliente.Close();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Console.WriteLine("Error al desconectar {0}", e);
+                Console.WriteLine("Error al desconectar: " + e);
             }
             finally
             {

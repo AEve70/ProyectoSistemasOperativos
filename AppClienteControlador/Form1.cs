@@ -49,6 +49,8 @@ namespace AppClienteControlador
                 if (ControlRemoto && client.Conectado)
                     _ = client.EnviarSimple(cmd);
             });
+
+            client.ConexionCerrada += ServidorDesconectado;
         }
 
         //Llenar el combo box los nombres relacionados a los comandos mas que todo para entendimiento del usuario
@@ -127,9 +129,7 @@ namespace AppClienteControlador
                 "No se recibió respuesta.";
         }
 
-        // -------------------------------------------------------------------
-        //  CONTROL DE VOLUMEN
-        // -------------------------------------------------------------------
+        // Controles de volumen
 
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
@@ -207,7 +207,7 @@ namespace AppClienteControlador
             richTextBox1.Text = "Control remoto DETENIDO.";
         }
 
-        // → Movimiento del mouse
+        // Movimiento del mouse
         private async void timer_mouse_Tick(object sender, EventArgs e)
         {
             if (!ControlRemoto || !client.Conectado) return;
@@ -217,7 +217,7 @@ namespace AppClienteControlador
             await client.Enviar("MOVE_MOUSE", new { x = pos.X, y = pos.Y });
         }
 
-        // → CLICS
+        // CLICS
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
@@ -266,7 +266,7 @@ namespace AppClienteControlador
             MostrarCaptura(respuesta);
         }
 
-
+        //Metodo que recibe los bytes que forman la imagen y abre un form con un picture box para mostrar la captura
         private void MostrarCaptura(MensajesIO respuesta)
         {
             try
@@ -309,9 +309,7 @@ namespace AppClienteControlador
             }
         }
 
-        // -------------------------------------------------------------------
-        //  MENSAJES
-        // -------------------------------------------------------------------
+        // metodo basico para mostrar un mensaje
 
         private async void btn_message_Click(object sender, EventArgs e)
         {
@@ -335,9 +333,7 @@ namespace AppClienteControlador
             richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
         }
 
-        // -------------------------------------------------------------------
-        //  TRADUCCIÓN DE RESPUESTAS NORMALES
-        // -------------------------------------------------------------------
+        // Como las solicitudes y respuestas estan en formato JSON, se necesita convertir esa estructura en un String común para ser legible al usuario
 
         private string TraducirRespuesta(MensajesIO respuesta)
         {
@@ -436,5 +432,28 @@ namespace AppClienteControlador
             }
             return t;
         }
+
+        //Cuando se hagan acciones de apagar-reiniciar-cerrar sesion el equipo remoto cierra las aplicaciones por default
+        //El equipo cliente debe detectar esa desconexion y detener las acciones que estaba realizando en el equipo remoto
+        private void ServidorDesconectado()
+        {
+            if (InvokeRequired)
+            {
+                Invoke((Action)ServidorDesconectado);
+                return;
+            }
+
+            ControlRemoto = false;
+            timer_mouse.Stop();
+
+            label4.Text = "Desconectado";
+            label4.ForeColor = Color.Red;
+
+            richTextBox1.Text = "El servidor se desconectó (apagado/reinicio/cierre de sesión).";
+
+            if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
+                ventanaCaptura.Close();
+        }
+
     }
 }
