@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -12,8 +13,8 @@ namespace AppClienteControlador
     public partial class Form1 : Form
     {
         private Cliente client;
-
         bool ControlRemoto;
+        private FormScrenshot ventanaCaptura;
         public Form1()
         {
             InitializeComponent();
@@ -367,5 +368,64 @@ namespace AppClienteControlador
             }
         }
 
+        private async void btn_message_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexión activa.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string texto = txt_mensaje.Text.Trim();
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                MessageBox.Show("Escribe un mensaje primero.");
+                return;
+            }
+
+            var solicitud = new MensajesIO("SHOW_MESSAGE", true, texto, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
+        }
+
+        private async void btn_screenshot_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexión.");
+                return;
+            }
+
+            var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            if (respuesta?.Datos == null)
+            {
+                MessageBox.Show("No se recibió imagen.");
+                return;
+            }
+
+            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
+                JsonSerializer.Serialize(respuesta.Datos)
+            );
+
+            string base64 = elem.GetProperty("imagen").GetString();
+            byte[] bytes = Convert.FromBase64String(base64);
+
+            using (var ms = new MemoryStream(bytes))
+            {
+                Image img = Image.FromStream(ms);
+
+                if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
+                    ventanaCaptura = new FormScrenshot();
+
+                ventanaCaptura.mostrarCaptura(img);
+                ventanaCaptura.Show();
+                ventanaCaptura.BringToFront();
+            }
+        }
     }
 }

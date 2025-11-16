@@ -52,14 +52,17 @@ namespace AppClienteControlador
             this.btn_reiniciar = new System.Windows.Forms.Button();
             this.btn_cerrarSesion = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btn_message = new System.Windows.Forms.Button();
+            this.btn_screenshot = new System.Windows.Forms.Button();
             this.btn_detenerMouse = new System.Windows.Forms.Button();
             this.timer_mouse = new System.Windows.Forms.Timer(this.components);
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.btn_screenshot = new System.Windows.Forms.Button();
-            this.btn_message = new System.Windows.Forms.Button();
+            this.Mensaje = new System.Windows.Forms.GroupBox();
+            this.txt_mensaje = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.Mensaje.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -274,7 +277,6 @@ namespace AppClienteControlador
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.btn_message);
             this.groupBox2.Controls.Add(this.btn_screenshot);
             this.groupBox2.Controls.Add(this.btn_silenciar);
             this.groupBox2.Controls.Add(this.btn_reiniciar);
@@ -289,6 +291,26 @@ namespace AppClienteControlador
             this.groupBox2.TabIndex = 17;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Acciones";
+            // 
+            // btn_message
+            // 
+            this.btn_message.Image = ((System.Drawing.Image)(resources.GetObject("btn_message.Image")));
+            this.btn_message.Location = new System.Drawing.Point(405, 23);
+            this.btn_message.Name = "btn_message";
+            this.btn_message.Size = new System.Drawing.Size(32, 26);
+            this.btn_message.TabIndex = 18;
+            this.btn_message.UseVisualStyleBackColor = true;
+            this.btn_message.Click += new System.EventHandler(this.btn_message_Click);
+            // 
+            // btn_screenshot
+            // 
+            this.btn_screenshot.Image = ((System.Drawing.Image)(resources.GetObject("btn_screenshot.Image")));
+            this.btn_screenshot.Location = new System.Drawing.Point(130, 14);
+            this.btn_screenshot.Name = "btn_screenshot";
+            this.btn_screenshot.Size = new System.Drawing.Size(45, 31);
+            this.btn_screenshot.TabIndex = 17;
+            this.btn_screenshot.UseVisualStyleBackColor = true;
+            this.btn_screenshot.Click += new System.EventHandler(this.btn_screenshot_Click);
             // 
             // btn_detenerMouse
             // 
@@ -320,30 +342,32 @@ namespace AppClienteControlador
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Control Remoto";
             // 
-            // btn_screenshot
+            // Mensaje
             // 
-            this.btn_screenshot.Image = ((System.Drawing.Image)(resources.GetObject("btn_screenshot.Image")));
-            this.btn_screenshot.Location = new System.Drawing.Point(168, 14);
-            this.btn_screenshot.Name = "btn_screenshot";
-            this.btn_screenshot.Size = new System.Drawing.Size(45, 31);
-            this.btn_screenshot.TabIndex = 17;
-            this.btn_screenshot.UseVisualStyleBackColor = true;
+            this.Mensaje.Controls.Add(this.txt_mensaje);
+            this.Mensaje.Controls.Add(this.btn_message);
+            this.Mensaje.Location = new System.Drawing.Point(12, 391);
+            this.Mensaje.Name = "Mensaje";
+            this.Mensaje.Size = new System.Drawing.Size(447, 55);
+            this.Mensaje.TabIndex = 19;
+            this.Mensaje.TabStop = false;
+            this.Mensaje.Text = "Enviar Mensaje";
             // 
-            // btn_message
+            // txt_mensaje
             // 
-            this.btn_message.Image = ((System.Drawing.Image)(resources.GetObject("btn_message.Image")));
-            this.btn_message.Location = new System.Drawing.Point(130, 15);
-            this.btn_message.Name = "btn_message";
-            this.btn_message.Size = new System.Drawing.Size(35, 30);
-            this.btn_message.TabIndex = 18;
-            this.btn_message.UseVisualStyleBackColor = true;
+            this.txt_mensaje.Location = new System.Drawing.Point(14, 16);
+            this.txt_mensaje.Multiline = true;
+            this.txt_mensaje.Name = "txt_mensaje";
+            this.txt_mensaje.Size = new System.Drawing.Size(388, 33);
+            this.txt_mensaje.TabIndex = 19;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
-            this.ClientSize = new System.Drawing.Size(471, 397);
+            this.ClientSize = new System.Drawing.Size(471, 455);
+            this.Controls.Add(this.Mensaje);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.richTextBox1);
@@ -357,6 +381,8 @@ namespace AppClienteControlador
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
+            this.Mensaje.ResumeLayout(false);
+            this.Mensaje.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -390,6 +416,8 @@ namespace AppClienteControlador
         private System.Windows.Forms.Button btn_message;
         private System.Windows.Forms.Button btn_screenshot;
         private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox Mensaje;
+        private System.Windows.Forms.TextBox txt_mensaje;
     }
 
 }

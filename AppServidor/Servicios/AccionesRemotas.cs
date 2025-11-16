@@ -3,12 +3,54 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Drawing;
+using System.IO;
 
 namespace AppServidor.Servicios
 {
-    class AccionesRemotas
+    public static class AccionesRemotas
     {
+        //Se tomara la captura en un formato entendible base64
+        public static String TomarScreenshot()
+        {
+            try
+            {
+                //Obtener las dimensiones de la pantalla
+                Rectangle bounds = Screen.PrimaryScreen.Bounds;
 
+                using (Bitmap bmp = new Bitmap(bounds.Width, bounds.Height))
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
+                    
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                        byte[] bytes = ms.ToArray();
 
+                        return Convert.ToBase64String(bytes);
+                    }
+                }
+            }catch(Exception e)
+            {
+                throw new Exception("Error al capturar la pantalla" + e.Message);
+            }
+        }
+
+        public static string MostrarMensaje(String texto)
+        {
+            try
+            {
+                MessageBox.Show(texto, "Mensaje desde el Controlador",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                return "Mensaje mostrado correctamente";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error mostrando mensaje: " + ex.Message);
+            }
+        }
     }
 }

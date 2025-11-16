@@ -150,6 +150,20 @@ namespace AppServidor
                         AccionesControl.Mover(x, y);
                         return $"Cursor movido a ({x},{y})";
                     }
+                case "MOUSE_LEFT":
+                    AccionesControl.ClickIzquierdo();
+                    return "Click izquierdo ejecutado";
+
+                case "MOUSE_RIGHT":
+                    AccionesControl.ClickDerecho();
+                    return "Click derecho ejecutado";
+
+                case "GET_SCREENSHOT":
+                    return new { imagen = AccionesRemotas.TomarScreenshot() };
+
+                case "SHOW_MESSAGE":
+                    string mensaje = datos?.ToString() ?? "";
+                    return new { resultado = AccionesRemotas.MostrarMensaje(mensaje) };
 
                 default:
                     throw new InvalidOperationException($"Comando no reconocido: {comando}");
@@ -158,4 +172,4 @@ namespace AppServidor
 
     }
 }
-}
+
