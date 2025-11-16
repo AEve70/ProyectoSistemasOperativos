@@ -11,12 +11,27 @@ namespace AppServidor.Servicios
         // 1. Nombre completo del SO / 2. Plataforma / 3. Versión
         public static object GetOSInfo()
         {
-            var os = Environment.OSVersion;
+            try
+            {
+                var searcher = new ManagementObjectSearcher("SELECT Caption, Version FROM Win32_OperatingSystem");
+                foreach (var os in searcher.Get())
+                {
+                    return new
+                    {
+                        os_name = os["Caption"]?.ToString(),
+                        version = os["Version"]?.ToString(),
+                        platform = Environment.OSVersion.Platform.ToString()
+                    };
+                }
+            }
+            catch (Exception) { }
+
+            // fallback
             return new
             {
-                os_name = os.VersionString,
-                platform = os.Platform.ToString(),
-                version = os.Version.ToString()
+                os_name = Environment.OSVersion.VersionString,
+                version = Environment.OSVersion.Version.ToString(),
+                platform = Environment.OSVersion.Platform.ToString()
             };
         }
 
