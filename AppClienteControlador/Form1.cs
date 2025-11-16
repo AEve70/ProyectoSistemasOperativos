@@ -15,6 +15,8 @@ namespace AppClienteControlador
         private Cliente client;
         private bool ControlRemoto;
         private FormScrenshot ventanaCaptura;
+        private HookMouse hook;
+
 
         // Diccionario visible al usuario → comando interno real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
@@ -40,6 +42,13 @@ namespace AppClienteControlador
             label4.ForeColor = Color.Coral;
 
             llenarComboBox();
+
+            //Para uso del mouse 
+            hook = new HookMouse(cmd =>
+            {
+                if (ControlRemoto && client.Conectado)
+                    _ = client.EnviarSimple(cmd);
+            });
         }
 
         //Llenar el combo box los nombres relacionados a los comandos mas que todo para entendimiento del usuario
@@ -180,6 +189,7 @@ namespace AppClienteControlador
             }
 
             ControlRemoto = true;
+            hook.Instalar();
 
             timer_mouse.Interval = 40;
             timer_mouse.Start();
@@ -191,6 +201,7 @@ namespace AppClienteControlador
         {
 
             ControlRemoto = false;
+            hook.Desinstalar();
             timer_mouse.Stop();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
