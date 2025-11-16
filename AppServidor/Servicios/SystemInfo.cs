@@ -3,11 +3,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 
 namespace AppServidor.Servicios
 {
     public static class SystemInfo
     {
+        //Como algunas difieren de la version de Windows se usara User32 para obtener algunas funciones
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
+
         // 1. Nombre completo del SO / 2. Plataforma / 3. Versión
         public static object GetOSInfo()
         {
@@ -36,20 +41,28 @@ namespace AppServidor.Servicios
         }
 
         // 4. Nombre del equipo
-        public static object GetMachineName() =>
-            new { machine_name = Environment.MachineName };
+        public static object GetMachineName()
+        {
+            return new { machine_name = Environment.MachineName };
+        }
+           
 
         // 9. Usuario actual
-        public static object GetUserInfo() =>
-            new { user = Environment.UserName };
+        public static object GetUserInfo()
+        {
+            return new { user = Environment.UserName };
+        }
+           
 
         // 5. Información del procesador
-        public static object GetProcessorInfo() =>
-            new
+        public static object GetProcessorInfo()
+        {
+            return new
             {
                 processor = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"),
                 logical_processors = Environment.ProcessorCount
             };
+        }
 
         // 6. Total RAM (GB)
         public static object GetRAM()
@@ -86,28 +99,23 @@ namespace AppServidor.Servicios
                 }).ToList();
         }
 
-        // 8. Resolución de pantalla (sin usar Forms)
+        // 8. Resolución de pantalla usando libreria nativa de Windows
         public static object GetResolution()
         {
             try
             {
-                var searcher = new ManagementObjectSearcher("SELECT ScreenWidth, ScreenHeight FROM Win32_DesktopMonitor");
-                foreach (var obj in searcher.Get())
+                int width = GetSystemMetrics(0);  // SM_CXSCREEN
+                int height = GetSystemMetrics(1); // SM_CYSCREEN
+
+                return new
                 {
-                    if (obj["ScreenWidth"] != null && obj["ScreenHeight"] != null)
-                    {
-                        return new
-                        {
-                            resolution = $"{obj["ScreenWidth"]}x{obj["ScreenHeight"]}"
-                        };
-                    }
-                }
+                    resolution = $"{width}x{height}"
+                };
             }
-            catch
+            catch (Exception ex)
             {
-                return new { resolution = "No disponible" };
+                return new { resolution = "No disponible", error = ex.Message };
             }
-            return new { resolution = "No disponible" };
         }
 
         // 10. Zona horaria y 11. Fecha/Hora
