@@ -44,6 +44,7 @@ namespace AppServidor.Servicios
         public static void DobleClick()
         {
             ClickIzquierdo();
+            System.Threading.Thread.Sleep(80);
             ClickDerecho();
         }
     }

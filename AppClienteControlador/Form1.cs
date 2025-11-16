@@ -312,18 +312,27 @@ namespace AppClienteControlador
             timer_mouse.Interval = 40;
             timer_mouse.Start();
 
-            // empezar a capturar clics
-            this.MouseDown += Form_MouseDown;
+            // empezar a transmitir la pantalla
+            timer_pantalla.Start();
 
+            //Validar si la ventana esta cerrada
+            if (ventanaCaptura == null || ventanaCaptura.IsDisposed) ventanaCaptura = new FormScrenshot();
+
+            //Mostrar ventana
+            ventanaCaptura.Show();
+            ventanaCaptura.BringToFront();
+            
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
+            //Detener el control remoto
             ControlRemoto = false;
 
+            
             timer_mouse.Stop();
-            this.MouseDown -= Form_MouseDown;
+            timer_pantalla.Stop();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
         }
@@ -349,22 +358,28 @@ namespace AppClienteControlador
         }
 
         //Metodo para capturar los clics naturales del usuario 
-        private async void Form_MouseDown(object sender, MouseEventArgs e)
+        protected override void WndProc(ref Message m)
         {
+            const int WM_LBUTTONDOWN = 0x0201;
+            const int WM_RBUTTONDOWN = 0x0204;
+            const int WM_LBUTTONDBLCLK = 0x0203;
+
+            base.WndProc(ref m);
+
             if (!ControlRemoto || !client.Conectado)
                 return;
 
-            MensajesIO solicitud;
-
-            if (e.Button == MouseButtons.Left)
+            if (m.Msg == WM_LBUTTONDOWN)
             {
-                solicitud = new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente");
-                await client.Enviar(solicitud);
+                _ = client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
             }
-            else if (e.Button == MouseButtons.Right)
+            else if (m.Msg == WM_RBUTTONDOWN)
             {
-                solicitud = new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente");
-                await client.Enviar(solicitud);
+                _ = client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
+            }if (m.Msg == WM_LBUTTONDBLCLK)
+            {
+                var solicitud = new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente");
+                _ = client.Enviar(solicitud);
             }
         }
 
@@ -425,6 +440,35 @@ namespace AppClienteControlador
                 ventanaCaptura.mostrarCaptura(img);
                 ventanaCaptura.Show();
                 ventanaCaptura.BringToFront();
+            }
+        }
+
+        //Metodo para transmitir en pantalla en "tiempo real" reutiliza el metodo de capturar pantalla solo que enciclado
+        private async void timer_pantalla_Tick(object sender, EventArgs e)
+        {
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            if (respuesta?.Datos == null)
+                return;
+
+            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
+                JsonSerializer.Serialize(respuesta.Datos)
+            );
+
+            string base64 = elem.GetProperty("imagen").GetString();
+            byte[] bytes = Convert.FromBase64String(base64);
+
+            using (var ms = new MemoryStream(bytes))
+            {
+                Image img = Image.FromStream(ms);
+
+                if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
+                    ventanaCaptura.mostrarCaptura(img);
             }
         }
     }

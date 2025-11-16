@@ -13,7 +13,9 @@ namespace AppClienteControlador
         public FormScrenshot()
         {
             InitializeComponent();
+            pb_captura.Dock = DockStyle.Fill;
             pb_captura.SizeMode = PictureBoxSizeMode.Zoom;
+            pb_captura.BackColor = Color.Black;
         }
 
         private void FormScrenshot_Load(object sender, EventArgs e)

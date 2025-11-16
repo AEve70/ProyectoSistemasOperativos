@@ -158,6 +158,10 @@ namespace AppServidor
                     AccionesControl.ClickDerecho();
                     return "Click derecho ejecutado";
 
+                case "MOUSE_DOUBLE":
+                    AccionesControl.DobleClick();
+                    return "Doble clic ejecutado";
+
                 case "GET_SCREENSHOT":
                     return new { imagen = AccionesRemotas.TomarScreenshot() };
 

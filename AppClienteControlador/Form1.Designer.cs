@@ -52,13 +52,14 @@ namespace AppClienteControlador
             this.btn_reiniciar = new System.Windows.Forms.Button();
             this.btn_cerrarSesion = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.btn_message = new System.Windows.Forms.Button();
             this.btn_screenshot = new System.Windows.Forms.Button();
+            this.btn_message = new System.Windows.Forms.Button();
             this.btn_detenerMouse = new System.Windows.Forms.Button();
             this.timer_mouse = new System.Windows.Forms.Timer(this.components);
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.Mensaje = new System.Windows.Forms.GroupBox();
             this.txt_mensaje = new System.Windows.Forms.TextBox();
+            this.timer_pantalla = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -292,16 +293,6 @@ namespace AppClienteControlador
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Acciones";
             // 
-            // btn_message
-            // 
-            this.btn_message.Image = ((System.Drawing.Image)(resources.GetObject("btn_message.Image")));
-            this.btn_message.Location = new System.Drawing.Point(405, 23);
-            this.btn_message.Name = "btn_message";
-            this.btn_message.Size = new System.Drawing.Size(32, 26);
-            this.btn_message.TabIndex = 18;
-            this.btn_message.UseVisualStyleBackColor = true;
-            this.btn_message.Click += new System.EventHandler(this.btn_message_Click);
-            // 
             // btn_screenshot
             // 
             this.btn_screenshot.Image = ((System.Drawing.Image)(resources.GetObject("btn_screenshot.Image")));
@@ -311,6 +302,16 @@ namespace AppClienteControlador
             this.btn_screenshot.TabIndex = 17;
             this.btn_screenshot.UseVisualStyleBackColor = true;
             this.btn_screenshot.Click += new System.EventHandler(this.btn_screenshot_Click);
+            // 
+            // btn_message
+            // 
+            this.btn_message.Image = ((System.Drawing.Image)(resources.GetObject("btn_message.Image")));
+            this.btn_message.Location = new System.Drawing.Point(405, 23);
+            this.btn_message.Name = "btn_message";
+            this.btn_message.Size = new System.Drawing.Size(32, 26);
+            this.btn_message.TabIndex = 18;
+            this.btn_message.UseVisualStyleBackColor = true;
+            this.btn_message.Click += new System.EventHandler(this.btn_message_Click);
             // 
             // btn_detenerMouse
             // 
@@ -360,6 +361,11 @@ namespace AppClienteControlador
             this.txt_mensaje.Name = "txt_mensaje";
             this.txt_mensaje.Size = new System.Drawing.Size(388, 33);
             this.txt_mensaje.TabIndex = 19;
+            // 
+            // timer_pantalla
+            // 
+            this.timer_pantalla.Interval = 120;
+            this.timer_pantalla.Tick += new System.EventHandler(this.timer_pantalla_Tick);
             // 
             // Form1
             // 
@@ -418,6 +424,7 @@ namespace AppClienteControlador
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox Mensaje;
         private System.Windows.Forms.TextBox txt_mensaje;
+        private System.Windows.Forms.Timer timer_pantalla;
     }
 
 }
