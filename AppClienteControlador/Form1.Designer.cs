@@ -59,7 +59,6 @@ namespace AppClienteControlador
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.Mensaje = new System.Windows.Forms.GroupBox();
             this.txt_mensaje = new System.Windows.Forms.TextBox();
-            this.timer_pantalla = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -362,11 +361,6 @@ namespace AppClienteControlador
             this.txt_mensaje.Size = new System.Drawing.Size(388, 33);
             this.txt_mensaje.TabIndex = 19;
             // 
-            // timer_pantalla
-            // 
-            this.timer_pantalla.Interval = 120;
-            this.timer_pantalla.Tick += new System.EventHandler(this.timer_pantalla_Tick);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -424,7 +418,6 @@ namespace AppClienteControlador
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox Mensaje;
         private System.Windows.Forms.TextBox txt_mensaje;
-        private System.Windows.Forms.Timer timer_pantalla;
     }
 
 }

@@ -13,24 +13,10 @@ namespace AppClienteControlador
     public partial class Form1 : Form
     {
         private Cliente client;
-        bool ControlRemoto;
+        private bool ControlRemoto;
         private FormScrenshot ventanaCaptura;
 
-        public Form1()
-        {
-            InitializeComponent();
-            client = new Cliente();
-            llenarComboBox();
-
-            label4.Text = "Desconectado";
-            label4.ForeColor = Color.Coral;
-
-            ControlRemoto = false;
-        }
-
-        // ============================================================
-        // COMANDOS DISPONIBLES
-        // ============================================================
+        // Diccionario visible al usuario → comando interno real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
         {
             {"Sistema Operativo", "GET_OS_INFO" },
@@ -44,6 +30,19 @@ namespace AppClienteControlador
             {"Procesos en Ejecución", "GET_PROCESSES" }
         };
 
+        public Form1()
+        {
+            InitializeComponent();
+            client = new Cliente();
+
+            ControlRemoto = false;
+            label4.Text = "Desconectado";
+            label4.ForeColor = Color.Coral;
+
+            llenarComboBox();
+        }
+
+        //Llenar el combo box los nombres relacionados a los comandos mas que todo para entendimiento del usuario
         private void llenarComboBox()
         {
             cbx_datos.Items.Clear();
@@ -51,28 +50,35 @@ namespace AppClienteControlador
             cbx_datos.SelectedIndex = 0;
         }
 
-        // ============================================================
-        // CONEXIÓN
-        // ============================================================
+        //Metodos para realizar la conexion - por defecto tendra la local, el usuario puede cambiar la Ip
         private async void btn_conectar_Click(object sender, EventArgs e)
         {
             string ip = txt_ip.Text.Trim();
+
             if (!int.TryParse(txt_puerto.Text, out int puerto))
             {
-                MessageBox.Show("Ingrese un número de puerto válido.");
+                MessageBox.Show("Ingrese un puerto válido.", "Error");
                 return;
             }
 
+            btn_conectar.Enabled = false;
             label4.Text = "Conectando...";
             label4.ForeColor = Color.Goldenrod;
-            btn_conectar.Enabled = false;
 
             bool ok = await client.Conectar(ip, puerto);
 
-            label4.Text = ok ? "Conectado" : "Error de conexión";
-            label4.ForeColor = ok ? Color.ForestGreen : Color.Red;
-
             btn_conectar.Enabled = true;
+
+            if (ok)
+            {
+                label4.Text = "Conectado";
+                label4.ForeColor = Color.ForestGreen;
+            }
+            else
+            {
+                label4.Text = "Error de conexión";
+                label4.ForeColor = Color.Red;
+            }
         }
 
         private void btn_desconectar_Click(object sender, EventArgs e)
@@ -90,9 +96,8 @@ namespace AppClienteControlador
             richTextBox1.Clear();
         }
 
-        // ============================================================
-        // CONSULTAR INFORMACIÓN DEL SISTEMA
-        // ============================================================
+        //Metodos para obtener informacion del equipo remoto
+
         private async void btn_consultar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -101,60 +106,39 @@ namespace AppClienteControlador
                 return;
             }
 
-            string eleccion = cbx_datos.SelectedItem.ToString();
+            string eleccion = cbx_datos.SelectedItem?.ToString() ?? "";
             string comando = comandos[eleccion];
 
-            var respuesta = await client.EnviarSimple(comando);
+            var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
+            await client.Enviar(solicitud);
 
-            if (respuesta != null)
-                richTextBox1.Text = TraducirRespuesta(respuesta);
-            else
-                richTextBox1.Text = "No se recibió respuesta.";
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta != null ?
+                TraducirRespuesta(respuesta) :
+                "No se recibió respuesta.";
         }
 
-        // ============================================================
-        // ACCIONES DE AUDIO
-        // ============================================================
+        // -------------------------------------------------------------------
+        //  CONTROL DE VOLUMEN
+        // -------------------------------------------------------------------
+
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
-            var res = await client.EnviarSimple("VOL_UP");
-            richTextBox1.Text = res?.Mensaje ?? "OK";
+            await EnviarSimple("VOL_UP");
         }
 
         private async void btn_bajarVolumen_Click(object sender, EventArgs e)
         {
-            var res = await client.EnviarSimple("VOL_DOWN");
-            richTextBox1.Text = res?.Mensaje ?? "OK";
+            await EnviarSimple("VOL_DOWN");
         }
 
         private async void btn_silenciar_Click(object sender, EventArgs e)
         {
-            var res = await client.EnviarSimple("MUTE");
-            richTextBox1.Text = res?.Mensaje ?? "OK";
+            await EnviarSimple("MUTE");
         }
 
-        // ============================================================
-        // ACCIONES DE SISTEMA
-        // ============================================================
-        private async void btn_apagar_Click(object sender, EventArgs e)
-        {
-            await client.EnviarSimple("SHUTDOWN");
-        }
-
-        private async void btn_reiniciar_Click(object sender, EventArgs e)
-        {
-            await client.EnviarSimple("REBOOT");
-        }
-
-        private async void btn_cerrarSesion_Click(object sender, EventArgs e)
-        {
-            await client.EnviarSimple("LOGOUT");
-        }
-
-        // ============================================================
-        // MENSAJES AL SERVIDOR
-        // ============================================================
-        private async void btn_message_Click(object sender, EventArgs e)
+        //Metodo para evitar repetir codigo al hacer solicitudes al servidor
+        private async Task EnviarSimple(string cmd)
         {
             if (!client.Conectado)
             {
@@ -162,51 +146,32 @@ namespace AppClienteControlador
                 return;
             }
 
-            string texto = txt_mensaje.Text.Trim();
-            if (string.IsNullOrWhiteSpace(texto))
-            {
-                MessageBox.Show("Escribe algo primero.");
-                return;
-            }
+            var solicitud = new MensajesIO(cmd, true, null, "", "Cliente");
+            await client.Enviar(solicitud);
 
-            var respuesta = await client.Enviar("SHOW_MESSAGE", texto);
-            richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta?.Mensaje ?? "OK";
         }
 
-        // ============================================================
-        // CAPTURA MANUAL
-        // ============================================================
-        private async void btn_screenshot_Click(object sender, EventArgs e)
+        // Metodos del sistema apagar-reiniciar-cerrar sesion
+
+        private async void btn_apagar_Click(object sender, EventArgs e)
         {
-            var respuesta = await client.EnviarSimple("GET_SCREENSHOT");
-
-            if (respuesta?.Datos == null)
-            {
-                MessageBox.Show("No se recibió imagen.");
-                return;
-            }
-
-            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(respuesta.Datos));
-            string base64 = elem.GetProperty("imagen").GetString();
-            byte[] bytes = Convert.FromBase64String(base64);
-
-            using (var ms = new MemoryStream(bytes))
-            {
-                Image img = Image.FromStream(ms);
-
-                if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
-                    ventanaCaptura = new FormScrenshot();
-
-                ventanaCaptura.mostrarCaptura(img);
-                ventanaCaptura.Show();
-                ventanaCaptura.BringToFront();
-            }
+            await EnviarSimple("SHUTDOWN");
         }
 
-        // ============================================================
-        // CONTROL REMOTO (MOUSE + STREAMING)
-        // ============================================================
-        private void button1_Click(object sender, EventArgs e)
+        private async void btn_reiniciar_Click(object sender, EventArgs e)
+        {
+            await EnviarSimple("REBOOT");
+        }
+
+        private async void btn_cerrarSesion_Click(object sender, EventArgs e)
+        {
+            await EnviarSimple("LOGOUT");
+        }
+
+        //Metodos de control remoto
+        private void button1_Click(object sender, EventArgs e) // Activar
         {
             if (!client.Conectado)
             {
@@ -219,39 +184,29 @@ namespace AppClienteControlador
             timer_mouse.Interval = 40;
             timer_mouse.Start();
 
-            timer_pantalla.Interval = 200; // 5 FPS aprox
-            timer_pantalla.Start();
-
-            if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
-                ventanaCaptura = new FormScrenshot();
-
-            ventanaCaptura.Show();
-            ventanaCaptura.BringToFront();
-
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e) // Detener
         {
-            ControlRemoto = false;
 
+            ControlRemoto = false;
             timer_mouse.Stop();
-            timer_pantalla.Stop();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
         }
 
+        // → Movimiento del mouse
         private async void timer_mouse_Tick(object sender, EventArgs e)
         {
-            if (!ControlRemoto || !client.Conectado)
-                return;
+            if (!ControlRemoto || !client.Conectado) return;
 
             Point pos = Cursor.Position;
 
             await client.Enviar("MOVE_MOUSE", new { x = pos.X, y = pos.Y });
         }
 
-        // clics reales del usuario
+        // → CLICS
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
@@ -263,121 +218,212 @@ namespace AppClienteControlador
             if (!ControlRemoto || !client.Conectado)
                 return;
 
-            if (m.Msg == WM_LBUTTONDOWN)
-                _ = client.EnviarSimple("MOUSE_LEFT");
-
-            else if (m.Msg == WM_RBUTTONDOWN)
-                _ = client.EnviarSimple("MOUSE_RIGHT");
-
-            else if (m.Msg == WM_LBUTTONDBLCLK)
-                _ = client.EnviarSimple("MOUSE_DOUBLE");
-        }
-
-        private async void timer_pantalla_Tick(object sender, EventArgs e)
-        {
-            if (!ControlRemoto || !client.Conectado)
-                return;
-
-            var respuesta = await client.EnviarSimple("GET_SCREENSHOT");
-            if (respuesta?.Datos == null) return;
-
-            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(respuesta.Datos));
-            string base64 = elem.GetProperty("imagen").GetString();
-
-            byte[] bytes = Convert.FromBase64String(base64);
-
-            using (var ms = new MemoryStream(bytes))
+            switch (m.Msg)
             {
-                Image img = Image.FromStream(ms);
+                case WM_LBUTTONDOWN:
+                    _ = client.EnviarSimple("MOUSE_LEFT");
+                    break;
 
-                if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
-                    ventanaCaptura.mostrarCaptura(img);
+                case WM_RBUTTONDOWN:
+                    _ = client.EnviarSimple("MOUSE_RIGHT");
+                    break;
+
+                case WM_LBUTTONDBLCLK:
+                    _ = client.EnviarSimple("MOUSE_DOUBLE");
+                    break;
             }
         }
 
-        // ============================================================
-        // TRADUCTOR DE RESPUESTAS
-        // ============================================================
-        private string TraducirRespuesta(MensajesIO respuesta)
+
+        // Captura de pantalla
+
+        private async void btn_screenshot_Click(object sender, EventArgs e)
         {
-            if (respuesta == null || respuesta.Datos == null)
-                return "No se recibió información.";
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexión.");
+                return;
+            }
 
-            string comando = respuesta.Comando.ToUpper();
-            string texto = "";
+            // pedir la captura al servidor
+            var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
+            await client.Enviar(solicitud);
 
+            var respuesta = await client.Recibir();
+
+            // usar el helper para mostrarla
+            MostrarCaptura(respuesta);
+        }
+
+
+        private void MostrarCaptura(MensajesIO respuesta)
+        {
             try
             {
-                var json = JsonSerializer.Serialize(respuesta.Datos);
-                JsonElement elemento = JsonSerializer.Deserialize<JsonElement>(json);
-
-                switch (comando)
+                if (respuesta?.Datos == null)
                 {
-                    case "GET_OS_INFO":
-                        texto = $"{elemento.GetProperty("os_name").GetString()} " +
-                                $"({elemento.GetProperty("platform").GetString()})\n" +
-                                $"Versión: {elemento.GetProperty("version").GetString()}";
-                        break;
+                    MessageBox.Show("No se recibió imagen del servidor.");
+                    return;
+                }
 
-                    case "GET_MACHINE_NAME":
-                        texto = $"Nombre del equipo: {elemento.GetProperty("machine_name").GetString()}";
-                        break;
+                // Datos → JsonElement
+                JsonElement root = JsonSerializer.Deserialize<JsonElement>(
+                    JsonSerializer.Serialize(respuesta.Datos));
 
-                    case "GET_USER":
-                        texto = $"Usuario activo: {elemento.GetProperty("user").GetString()}";
-                        break;
+                if (!root.TryGetProperty("imagen", out JsonElement imgElem))
+                {
+                    MessageBox.Show("La respuesta no contiene la imagen.");
+                    return;
+                }
 
-                    case "GET_PROCESSOR":
-                        texto = $"{elemento.GetProperty("processor").GetString()}\n" +
-                                $"Núcleos lógicos: {elemento.GetProperty("logical_processors").GetInt32()}";
-                        break;
+                string base64 = imgElem.GetString();
+                byte[] bytes = Convert.FromBase64String(base64);
 
-                    case "GET_RAM":
-                        texto = $"RAM total: {elemento.GetProperty("ram_total_gb").GetDouble()} GB";
-                        break;
+                using (var ms = new MemoryStream(bytes))
+                {
+                    Image img = Image.FromStream(ms);
 
-                    case "GET_DISKS":
-                        texto = "Unidades de disco:\n";
-                        foreach (var disco in elemento.EnumerateArray())
-                        {
-                            string name = disco.GetProperty("unidad").GetString();
-                            string formato = disco.GetProperty("formato").GetString();
-                            double total = disco.GetProperty("tamano_total_gb").GetDouble();
-                            double libre = disco.GetProperty("disponible_gb").GetDouble();
+                    // si la ventana no existe o está cerrada, la creamos
+                    if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
+                        ventanaCaptura = new FormScrenshot();
 
-                            texto += $"\n{name} ({formato}) → Total: {total} GB | Libre: {libre} GB";
-                        }
-                        break;
-
-                    case "GET_RESOLUTION":
-                        texto = $"Resolución: {elemento.GetProperty("resolution").GetString()}";
-                        break;
-
-                    case "GET_TIME":
-                        texto = $"{elemento.GetProperty("datetime").GetString()}\n" +
-                                $"Zona horaria: {elemento.GetProperty("timezone").GetString()}";
-                        break;
-
-                    case "GET_PROCESSES":
-                        texto = "Procesos activos:\n";
-                        foreach (var proc in elemento.EnumerateArray())
-                        {
-                            texto += $"- {proc.GetProperty("ProcessName").GetString()} " +
-                                     $"(PID {proc.GetProperty("Id").GetInt32()})\n";
-                        }
-                        break;
-
-                    default:
-                        texto = "Respuesta no formateada.";
-                        break;
+                    ventanaCaptura.mostrarCaptura(img); // aquí adentro usás el PictureBox
+                    ventanaCaptura.Show();
+                    ventanaCaptura.BringToFront();
                 }
             }
             catch (Exception ex)
             {
-                texto = $"Error procesando JSON: {ex.Message}";
+                MessageBox.Show($"Error mostrando la captura: {ex.Message}");
+            }
+        }
+
+        // -------------------------------------------------------------------
+        //  MENSAJES
+        // -------------------------------------------------------------------
+
+        private async void btn_message_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexión.");
+                return;
             }
 
-            return texto;
+            string texto = txt_mensaje.Text.Trim();
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                MessageBox.Show("Escribe un mensaje.");
+                return;
+            }
+
+            var solicitud = new MensajesIO("SHOW_MESSAGE", true, texto, "", "Cliente");
+            await client.Enviar(solicitud);
+
+            var respuesta = await client.Recibir();
+            richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
+        }
+
+        // -------------------------------------------------------------------
+        //  TRADUCCIÓN DE RESPUESTAS NORMALES
+        // -------------------------------------------------------------------
+
+        private string TraducirRespuesta(MensajesIO respuesta)
+        {
+            if (respuesta == null || respuesta.Datos == null)
+                return "Sin datos.";
+
+            try
+            {
+                // convertir datos a JsonElement por cuestiones de facilidad al enviar respuestas complejas
+                JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
+                    JsonSerializer.Serialize(respuesta.Datos)
+                );
+
+                string cmd = respuesta.Comando.ToUpper();
+
+                string texto;
+
+                switch (cmd)
+                {
+                    case "GET_OS_INFO":
+                        texto =
+                            $"{elem.GetProperty("os_name")}\n" +
+                            $"{elem.GetProperty("platform")}\n" +
+                            $"Versión: {elem.GetProperty("version")}";
+                        break;
+
+                    case "GET_MACHINE_NAME":
+                        texto = $"Nombre del equipo: {elem.GetProperty("machine_name")}";
+                        break;
+
+                    case "GET_USER":
+                        texto = $"Usuario: {elem.GetProperty("user")}";
+                        break;
+
+                    case "GET_PROCESSOR":
+                        texto =
+                            $"{elem.GetProperty("processor")}\n" +
+                            $"Lógicos: {elem.GetProperty("logical_processors")}";
+                        break;
+
+                    case "GET_RAM":
+                        texto = $"RAM total: {elem.GetProperty("ram_total_gb")} GB";
+                        break;
+
+                    case "GET_RESOLUTION":
+                        texto = $"Resolución: {elem.GetProperty("resolution")}";
+                        break;
+
+                    case "GET_TIME":
+                        texto =
+                            $"{elem.GetProperty("datetime")}\n" +
+                            $"{elem.GetProperty("timezone")}";
+                        break;
+
+                    case "GET_DISKS":
+                        texto = TraducirDiscos(elem);
+                        break;
+
+                    case "GET_PROCESSES":
+                        texto = TraducirProcesos(elem);
+                        break;
+
+                    default:
+                        texto = "Comando no implementado.";
+                        break;
+                }
+
+                return texto;
+            }
+            catch (Exception ex)
+            {
+                return $"Error al traducir: {ex.Message}";
+            }
+        }
+
+
+        private static string TraducirDiscos(JsonElement elem)
+        {
+            string t = "Discos detectados:\n";
+            foreach (var d in elem.EnumerateArray())
+            {
+                t += $"- {d.GetProperty("unidad")} ({d.GetProperty("formato")})\n" +
+                     $"  Total: {d.GetProperty("tamano_total_gb")} | " +
+                     $"Usado: {d.GetProperty("usado_gb")} | " +
+                     $"Libre: {d.GetProperty("disponible_gb")}\n";
+            }
+            return t;
+        }
+
+        private static string TraducirProcesos(JsonElement elem)
+        {
+            string t = "Procesos (máx. 200):\n";
+            foreach (var p in elem.EnumerateArray())
+            {
+                t += $"- {p.GetProperty("ProcessName")} (PID {p.GetProperty("Id")})\n";
+            }
+            return t;
         }
     }
 }

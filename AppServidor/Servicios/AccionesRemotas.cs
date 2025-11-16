@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Windows.Forms;
 
 namespace AppServidor.Servicios
 {
     public static class AccionesRemotas
     {
-        //Se tomara la captura en un formato entendible base64
         public static string TomarScreenshot()
         {
             try
@@ -21,7 +16,8 @@ namespace AppServidor.Servicios
                 using (Bitmap bmp = new Bitmap(bounds.Width, bounds.Height))
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    g.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
+                    // ESTA ES LA LINEA CORRECTA
+                    g.CopyFromScreen(bounds.X,bounds.Y, 0,0,bounds.Size,CopyPixelOperation.SourceCopy);
 
                     using (MemoryStream ms = new MemoryStream())
                     {
@@ -30,25 +26,24 @@ namespace AppServidor.Servicios
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception("Error al capturar pantalla: " + e.Message);
+                // MUY IMPORTANTE: nunca rompas el JSON. Devuelve un texto.
+                return $"ERROR_SCREENSHOT:{ex.Message}";
             }
         }
 
-
-        public static string MostrarMensaje(String texto)
+        public static string MostrarMensaje(string texto)
         {
             try
             {
-                MessageBox.Show(texto, "Mensaje desde el Controlador",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(texto, "Mensaje desde el Controlador", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return "Mensaje mostrado correctamente";
             }
             catch (Exception ex)
             {
-                throw new Exception("Error mostrando mensaje: " + ex.Message);
+                return $"ERROR_MSG:{ex.Message}";
             }
         }
     }
