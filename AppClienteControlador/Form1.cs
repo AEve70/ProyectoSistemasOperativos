@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Compartido; // para MensajesIO
+using Compartido;
 
 namespace AppClienteControlador
 {
@@ -15,19 +15,22 @@ namespace AppClienteControlador
         private Cliente client;
         bool ControlRemoto;
         private FormScrenshot ventanaCaptura;
+
         public Form1()
         {
             InitializeComponent();
             client = new Cliente();
             llenarComboBox();
-            //Etiqueta que indica estado
+
             label4.Text = "Desconectado";
             label4.ForeColor = Color.Coral;
+
             ControlRemoto = false;
-            
         }
 
-        // Diccionario que vincula la acción del usuario con el comando real
+        // ============================================================
+        // COMANDOS DISPONIBLES
+        // ============================================================
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
         {
             {"Sistema Operativo", "GET_OS_INFO" },
@@ -48,12 +51,15 @@ namespace AppClienteControlador
             cbx_datos.SelectedIndex = 0;
         }
 
+        // ============================================================
+        // CONEXIÓN
+        // ============================================================
         private async void btn_conectar_Click(object sender, EventArgs e)
         {
             string ip = txt_ip.Text.Trim();
             if (!int.TryParse(txt_puerto.Text, out int puerto))
             {
-                MessageBox.Show("Ingrese un número de puerto válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Ingrese un número de puerto válido.");
                 return;
             }
 
@@ -63,114 +69,245 @@ namespace AppClienteControlador
 
             bool ok = await client.Conectar(ip, puerto);
 
-            if (ok)
-            {
-                label4.Text = "Conectado";
-                label4.ForeColor = Color.ForestGreen;
-            }
-            else
-            {
-                label4.Text = "Error de conexión";
-                label4.ForeColor = Color.Red;
-            }
+            label4.Text = ok ? "Conectado" : "Error de conexión";
+            label4.ForeColor = ok ? Color.ForestGreen : Color.Red;
 
             btn_conectar.Enabled = true;
         }
 
-        private async void btn_consultar_Click(object sender, EventArgs e)
+        private void btn_desconectar_Click(object sender, EventArgs e)
         {
-            // Verificar conexión
             if (!client.Conectado)
             {
-                MessageBox.Show("No hay conexión con el servidor.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No hay conexión activa.");
                 return;
             }
 
-            //Validar que haya seleccionado una opcion del combo box
-            if (cbx_datos.SelectedItem == null)
+            client.Desconectar();
+
+            label4.Text = "Desconectado";
+            label4.ForeColor = Color.Red;
+            richTextBox1.Clear();
+        }
+
+        // ============================================================
+        // CONSULTAR INFORMACIÓN DEL SISTEMA
+        // ============================================================
+        private async void btn_consultar_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
             {
-                MessageBox.Show("Seleccione una opción antes de consultar.");
+                MessageBox.Show("No hay conexión.");
                 return;
             }
 
-            //El usuario elije y luego se manda la solicitud al servidor, si el servidor responde se recibe una repsuesta y se muestra en el text box
             string eleccion = cbx_datos.SelectedItem.ToString();
             string comando = comandos[eleccion];
 
-            var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-
-            var respuesta = await client.Recibir();
+            var respuesta = await client.EnviarSimple(comando);
 
             if (respuesta != null)
-            {
                 richTextBox1.Text = TraducirRespuesta(respuesta);
-            }
             else
-            {
-                richTextBox1.Text = "No se recibió respuesta del servidor.";
-            }
+                richTextBox1.Text = "No se recibió respuesta.";
         }
 
+        // ============================================================
+        // ACCIONES DE AUDIO
+        // ============================================================
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var solicitud = new MensajesIO("VOL_UP", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta?.Mensaje ?? "OK"; 
+            var res = await client.EnviarSimple("VOL_UP");
+            richTextBox1.Text = res?.Mensaje ?? "OK";
         }
 
         private async void btn_bajarVolumen_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var solicitud = new MensajesIO("VOL_DOWN", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta?.Mensaje ?? "OK";
+            var res = await client.EnviarSimple("VOL_DOWN");
+            richTextBox1.Text = res?.Mensaje ?? "OK";
         }
 
         private async void btn_silenciar_Click(object sender, EventArgs e)
         {
+            var res = await client.EnviarSimple("MUTE");
+            richTextBox1.Text = res?.Mensaje ?? "OK";
+        }
+
+        // ============================================================
+        // ACCIONES DE SISTEMA
+        // ============================================================
+        private async void btn_apagar_Click(object sender, EventArgs e)
+        {
+            await client.EnviarSimple("SHUTDOWN");
+        }
+
+        private async void btn_reiniciar_Click(object sender, EventArgs e)
+        {
+            await client.EnviarSimple("REBOOT");
+        }
+
+        private async void btn_cerrarSesion_Click(object sender, EventArgs e)
+        {
+            await client.EnviarSimple("LOGOUT");
+        }
+
+        // ============================================================
+        // MENSAJES AL SERVIDOR
+        // ============================================================
+        private async void btn_message_Click(object sender, EventArgs e)
+        {
             if (!client.Conectado)
             {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No hay conexión.");
                 return;
             }
 
-            var solicitud = new MensajesIO("MUTE", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
+            string texto = txt_mensaje.Text.Trim();
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                MessageBox.Show("Escribe algo primero.");
+                return;
+            }
 
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta?.Mensaje ?? "OK";
+            var respuesta = await client.Enviar("SHOW_MESSAGE", texto);
+            richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
         }
 
+        // ============================================================
+        // CAPTURA MANUAL
+        // ============================================================
+        private async void btn_screenshot_Click(object sender, EventArgs e)
+        {
+            var respuesta = await client.EnviarSimple("GET_SCREENSHOT");
 
+            if (respuesta?.Datos == null)
+            {
+                MessageBox.Show("No se recibió imagen.");
+                return;
+            }
 
-        //Se usa para traducir respuestas complejas es decir multilinea
+            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(respuesta.Datos));
+            string base64 = elem.GetProperty("imagen").GetString();
+            byte[] bytes = Convert.FromBase64String(base64);
+
+            using (var ms = new MemoryStream(bytes))
+            {
+                Image img = Image.FromStream(ms);
+
+                if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
+                    ventanaCaptura = new FormScrenshot();
+
+                ventanaCaptura.mostrarCaptura(img);
+                ventanaCaptura.Show();
+                ventanaCaptura.BringToFront();
+            }
+        }
+
+        // ============================================================
+        // CONTROL REMOTO (MOUSE + STREAMING)
+        // ============================================================
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexión activa.");
+                return;
+            }
+
+            ControlRemoto = true;
+
+            timer_mouse.Interval = 40;
+            timer_mouse.Start();
+
+            timer_pantalla.Interval = 200; // 5 FPS aprox
+            timer_pantalla.Start();
+
+            if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
+                ventanaCaptura = new FormScrenshot();
+
+            ventanaCaptura.Show();
+            ventanaCaptura.BringToFront();
+
+            richTextBox1.Text = "Control remoto ACTIVADO.";
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ControlRemoto = false;
+
+            timer_mouse.Stop();
+            timer_pantalla.Stop();
+
+            richTextBox1.Text = "Control remoto DETENIDO.";
+        }
+
+        private async void timer_mouse_Tick(object sender, EventArgs e)
+        {
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            Point pos = Cursor.Position;
+
+            await client.Enviar("MOVE_MOUSE", new { x = pos.X, y = pos.Y });
+        }
+
+        // clics reales del usuario
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_LBUTTONDOWN = 0x0201;
+            const int WM_RBUTTONDOWN = 0x0204;
+            const int WM_LBUTTONDBLCLK = 0x0203;
+
+            base.WndProc(ref m);
+
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            if (m.Msg == WM_LBUTTONDOWN)
+                _ = client.EnviarSimple("MOUSE_LEFT");
+
+            else if (m.Msg == WM_RBUTTONDOWN)
+                _ = client.EnviarSimple("MOUSE_RIGHT");
+
+            else if (m.Msg == WM_LBUTTONDBLCLK)
+                _ = client.EnviarSimple("MOUSE_DOUBLE");
+        }
+
+        private async void timer_pantalla_Tick(object sender, EventArgs e)
+        {
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            var respuesta = await client.EnviarSimple("GET_SCREENSHOT");
+            if (respuesta?.Datos == null) return;
+
+            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(respuesta.Datos));
+            string base64 = elem.GetProperty("imagen").GetString();
+
+            byte[] bytes = Convert.FromBase64String(base64);
+
+            using (var ms = new MemoryStream(bytes))
+            {
+                Image img = Image.FromStream(ms);
+
+                if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
+                    ventanaCaptura.mostrarCaptura(img);
+            }
+        }
+
+        // ============================================================
+        // TRADUCTOR DE RESPUESTAS
+        // ============================================================
         private string TraducirRespuesta(MensajesIO respuesta)
         {
             if (respuesta == null || respuesta.Datos == null)
-                return "No se recibió información del servidor.";
+                return "No se recibió información.";
 
             string comando = respuesta.Comando.ToUpper();
             string texto = "";
 
             try
             {
-                // Convertimos a JSON string para leerlo
                 var json = JsonSerializer.Serialize(respuesta.Datos);
                 JsonElement elemento = JsonSerializer.Deserialize<JsonElement>(json);
 
@@ -196,25 +333,24 @@ namespace AppClienteControlador
                         break;
 
                     case "GET_RAM":
-                        texto = $"Memoria RAM total: {elemento.GetProperty("ram_total_gb").GetDouble()} GB";
+                        texto = $"RAM total: {elemento.GetProperty("ram_total_gb").GetDouble()} GB";
                         break;
 
                     case "GET_DISKS":
-                        texto = "Unidades de disco detectadas:\n";
+                        texto = "Unidades de disco:\n";
                         foreach (var disco in elemento.EnumerateArray())
                         {
                             string name = disco.GetProperty("unidad").GetString();
                             string formato = disco.GetProperty("formato").GetString();
                             double total = disco.GetProperty("tamano_total_gb").GetDouble();
-                            double usado = disco.GetProperty("usado_gb").GetDouble();
                             double libre = disco.GetProperty("disponible_gb").GetDouble();
 
-                            texto += $"\n{name} ({formato}) → Total: {total} GB | Usado: {usado} GB | Libre: {libre} GB";
+                            texto += $"\n{name} ({formato}) → Total: {total} GB | Libre: {libre} GB";
                         }
                         break;
 
                     case "GET_RESOLUTION":
-                        texto = $"Resolución de pantalla: {elemento.GetProperty("resolution").GetString()}";
+                        texto = $"Resolución: {elemento.GetProperty("resolution").GetString()}";
                         break;
 
                     case "GET_TIME":
@@ -223,253 +359,25 @@ namespace AppClienteControlador
                         break;
 
                     case "GET_PROCESSES":
-                        texto = "Procesos activos (máx. 200):\n";
+                        texto = "Procesos activos:\n";
                         foreach (var proc in elemento.EnumerateArray())
                         {
-                            string nombre = proc.GetProperty("ProcessName").GetString();
-                            int id = proc.GetProperty("Id").GetInt32();
-                            texto += $"- {nombre} (PID {id})\n";
+                            texto += $"- {proc.GetProperty("ProcessName").GetString()} " +
+                                     $"(PID {proc.GetProperty("Id").GetInt32()})\n";
                         }
                         break;
 
                     default:
-                        texto = "Comando no reconocido o sin formato definido.";
+                        texto = "Respuesta no formateada.";
                         break;
                 }
             }
             catch (Exception ex)
             {
-                texto = $"Error al procesar datos: {ex.Message}";
+                texto = $"Error procesando JSON: {ex.Message}";
             }
 
             return texto;
-        }
-
-        private void btn_desconectar_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            client.Desconectar();
-
-            label4.Text = "Desconectado";
-            label4.ForeColor = Color.Red;
-
-            richTextBox1.Clear();
-        }
-
-        private async void btn_apagar_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var solicitud = new MensajesIO("SHUTDOWN", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-        }
-
-        private async void btn_reiniciar_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var solicitud = new MensajesIO("REBOOT", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-
-        }
-
-        private async void btn_cerrarSesion_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var solicitud = new MensajesIO("LOGOUT", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexión activa.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            ControlRemoto = true;
-
-            // empezar a enviar coordenadas
-            timer_mouse.Interval = 40;
-            timer_mouse.Start();
-
-            // empezar a transmitir la pantalla
-            timer_pantalla.Start();
-
-            //Validar si la ventana esta cerrada
-            if (ventanaCaptura == null || ventanaCaptura.IsDisposed) ventanaCaptura = new FormScrenshot();
-
-            //Mostrar ventana
-            ventanaCaptura.Show();
-            ventanaCaptura.BringToFront();
-            
-            richTextBox1.Text = "Control remoto ACTIVADO.";
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            //Detener el control remoto
-            ControlRemoto = false;
-
-            
-            timer_mouse.Stop();
-            timer_pantalla.Stop();
-
-            richTextBox1.Text = "Control remoto DETENIDO.";
-        }
-
-        private async void timer_mouse_Tick(object sender, EventArgs e)
-        {
-
-            if (!ControlRemoto || !client.Conectado)
-                return;
-
-            // posición actual del mouse en el cliente
-            Point pos = Cursor.Position;
-
-            var solicitud = new MensajesIO(
-                "MOVE_MOUSE",
-                true,
-                new { x = pos.X, y = pos.Y },
-                "",
-                "Cliente"
-            );
-
-            await client.Enviar(solicitud);
-        }
-
-        //Metodo para capturar los clics naturales del usuario 
-        protected override void WndProc(ref Message m)
-        {
-            const int WM_LBUTTONDOWN = 0x0201;
-            const int WM_RBUTTONDOWN = 0x0204;
-            const int WM_LBUTTONDBLCLK = 0x0203;
-
-            base.WndProc(ref m);
-
-            if (!ControlRemoto || !client.Conectado)
-                return;
-
-            if (m.Msg == WM_LBUTTONDOWN)
-            {
-                _ = client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
-            }
-            else if (m.Msg == WM_RBUTTONDOWN)
-            {
-                _ = client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
-            }if (m.Msg == WM_LBUTTONDBLCLK)
-            {
-                var solicitud = new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente");
-                _ = client.Enviar(solicitud);
-            }
-        }
-
-        private async void btn_message_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexión activa.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string texto = txt_mensaje.Text.Trim();
-            if (string.IsNullOrWhiteSpace(texto))
-            {
-                MessageBox.Show("Escribe un mensaje primero.");
-                return;
-            }
-
-            var solicitud = new MensajesIO("SHOW_MESSAGE", true, texto, "", "Cliente");
-            await client.Enviar(solicitud);
-
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
-        }
-
-        private async void btn_screenshot_Click(object sender, EventArgs e)
-        {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexión.");
-                return;
-            }
-
-            var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-
-            var respuesta = await client.Recibir();
-            if (respuesta?.Datos == null)
-            {
-                MessageBox.Show("No se recibió imagen.");
-                return;
-            }
-
-            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(respuesta.Datos)
-            );
-
-            string base64 = elem.GetProperty("imagen").GetString();
-            byte[] bytes = Convert.FromBase64String(base64);
-
-            using (var ms = new MemoryStream(bytes))
-            {
-                Image img = Image.FromStream(ms);
-
-                if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
-                    ventanaCaptura = new FormScrenshot();
-
-                ventanaCaptura.mostrarCaptura(img);
-                ventanaCaptura.Show();
-                ventanaCaptura.BringToFront();
-            }
-        }
-
-        //Metodo para transmitir en pantalla en "tiempo real" reutiliza el metodo de capturar pantalla solo que enciclado
-        private async void timer_pantalla_Tick(object sender, EventArgs e)
-        {
-            if (!ControlRemoto || !client.Conectado)
-                return;
-
-            var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
-
-            var respuesta = await client.Recibir();
-            if (respuesta?.Datos == null)
-                return;
-
-            JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
-                JsonSerializer.Serialize(respuesta.Datos)
-            );
-
-            string base64 = elem.GetProperty("imagen").GetString();
-            byte[] bytes = Convert.FromBase64String(base64);
-
-            using (var ms = new MemoryStream(bytes))
-            {
-                Image img = Image.FromStream(ms);
-
-                if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
-                    ventanaCaptura.mostrarCaptura(img);
-            }
         }
     }
 }

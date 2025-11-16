@@ -12,31 +12,30 @@ namespace AppServidor.Servicios
     public static class AccionesRemotas
     {
         //Se tomara la captura en un formato entendible base64
-        public static String TomarScreenshot()
+        public static string TomarScreenshot()
         {
             try
             {
-                //Obtener las dimensiones de la pantalla
                 Rectangle bounds = Screen.PrimaryScreen.Bounds;
 
                 using (Bitmap bmp = new Bitmap(bounds.Width, bounds.Height))
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
-                    
+                    g.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bounds.Size);
+
                     using (MemoryStream ms = new MemoryStream())
                     {
                         bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                        byte[] bytes = ms.ToArray();
-
-                        return Convert.ToBase64String(bytes);
+                        return Convert.ToBase64String(ms.ToArray());
                     }
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
-                throw new Exception("Error al capturar la pantalla" + e.Message);
+                throw new Exception("Error al capturar pantalla: " + e.Message);
             }
         }
+
 
         public static string MostrarMensaje(String texto)
         {

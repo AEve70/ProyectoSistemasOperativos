@@ -43,9 +43,15 @@ namespace AppServidor.Servicios
 
         public static void DobleClick()
         {
-            ClickIzquierdo();
-            System.Threading.Thread.Sleep(80);
-            ClickDerecho();
+            // doble click (dos clics en la zona izquierda)
+            mouse_event(LEFTDOWN, 0, 0, 0, 0);
+            mouse_event(LEFTUP, 0, 0, 0, 0);
+
+            System.Threading.Thread.Sleep(70);
+
+            mouse_event(LEFTDOWN, 0, 0, 0, 0);
+            mouse_event(LEFTUP, 0, 0, 0, 0);
         }
+    }
     }
 }

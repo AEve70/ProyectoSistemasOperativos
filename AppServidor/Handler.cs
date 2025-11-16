@@ -7,8 +7,7 @@ using Compartido;
 using AppServidor.Servicios;
 
 namespace AppServidor
-{   // Handler es una clase que se encarga de la logica del servidor
-    //Gestiona las solicitudes del cliente y las realiza 
+{
     public class Handler
     {
         private readonly TcpClient cliente;
@@ -18,6 +17,7 @@ namespace AppServidor
             this.cliente = cliente;
         }
 
+        //Metodo que ejecuta el servidor por medio de un Thread
         public void Run()
         {
             try
@@ -40,15 +40,17 @@ namespace AppServidor
                     }
                     catch
                     {
-                        var error = new MensajesIO("ERROR", false, null, "JSON inválido o malformado", "Servidor");
-                        writer.WriteLine(JsonSerializer.Serialize(error));
+                        writer.WriteLine(JsonSerializer.Serialize(
+                            new MensajesIO("ERROR", false, null, "JSON inválido", "Servidor")
+                        ));
                         continue;
                     }
 
                     if (solicitud == null || string.IsNullOrWhiteSpace(solicitud.Comando))
                     {
-                        var error = new MensajesIO("ERROR", false, null, "Solicitud vacía o sin comando", "Servidor");
-                        writer.WriteLine(JsonSerializer.Serialize(error));
+                        writer.WriteLine(JsonSerializer.Serialize(
+                            new MensajesIO("ERROR", false, null, "Solicitud sin comando", "Servidor")
+                        ));
                         continue;
                     }
 
@@ -56,9 +58,7 @@ namespace AppServidor
 
                     try
                     {
-                        
                         object datosRespuesta = ProcesarComando(solicitud.Comando, solicitud.Datos);
-
                         respuesta = new MensajesIO(solicitud.Comando, true, datosRespuesta, "OK", "Servidor");
                     }
                     catch (Exception ex)
@@ -68,6 +68,7 @@ namespace AppServidor
 
                     string json = JsonSerializer.Serialize(respuesta);
                     writer.WriteLine(json);
+
                     Console.WriteLine($"→ Enviado a {cliente.Client.RemoteEndPoint}: {json}");
                 }
             }
@@ -82,98 +83,71 @@ namespace AppServidor
             }
         }
 
-        // Metodo que procesa los comandos, como todos son distintos se devuelve un Object
+        //Procesa los comandos segun lo que pida el usuario
+
         private object ProcesarComando(string comando, object datos)
         {
             switch (comando.ToUpper())
             {
-                case "GET_OS_INFO":
-                    return SystemInfo.GetOSInfo();
+                // Acciones de extraccion de datos
+                case "GET_OS_INFO": return SystemInfo.GetOSInfo();
+                case "GET_MACHINE_NAME": return SystemInfo.GetMachineName(); //No se usan breaks por la existencia del return
+                case "GET_USER": return SystemInfo.GetUserInfo();
+                case "GET_PROCESSOR": return SystemInfo.GetProcessorInfo();
+                case "GET_RAM": return SystemInfo.GetRAM();
+                case "GET_DISKS": return SystemInfo.GetDisks();
+                case "GET_RESOLUTION": return SystemInfo.GetResolution();
+                case "GET_TIME": return SystemInfo.GetTime();
+                case "GET_PROCESSES": return SystemInfo.GetProcesses();
 
-                case "GET_MACHINE_NAME":
-                    return SystemInfo.GetMachineName();
+                // Acciones para controlar audio
+                case "VOL_UP": AccionesVolumen.SubirVolumen(); return "Volumen subido";
+                case "VOL_DOWN": AccionesVolumen.BajarVolumen(); return "Volumen bajado";
+                case "MUTE": AccionesVolumen.Silenciar(); return "Silenciado";
 
-                case "GET_USER":
-                    return SystemInfo.GetUserInfo();
+                // Acciones del sistema
+                case "SHUTDOWN": AccionesSistema.Apagar(); return "Apagando...";
+                case "REBOOT": AccionesSistema.Reiniciar(); return "Reiniciando...";
+                case "LOGOUT": AccionesSistema.CerrarSesion(); return "Cerrando sesión...";
 
-                case "GET_PROCESSOR":
-                    return SystemInfo.GetProcessorInfo();
-
-                case "GET_RAM":
-                    return SystemInfo.GetRAM();
-
-                case "GET_DISKS":
-                    return SystemInfo.GetDisks();
-
-                case "GET_RESOLUTION":
-                    return SystemInfo.GetResolution();
-
-                case "GET_TIME":
-                    return SystemInfo.GetTime();
-
-                case "GET_PROCESSES":
-                    return SystemInfo.GetProcesses();
-
-                case "VOL_UP":
-                    AccionesVolumen.SubirVolumen();
-                    return "Volumen subido";
-
-                case "VOL_DOWN":
-                    AccionesVolumen.BajarVolumen();
-                    return "Volumen bajado";
-
-                case "MUTE":
-                    AccionesVolumen.Silenciar();
-                    return "Silenciado";
-
-                case "SHUTDOWN":
-                    AccionesSistema.Apagar();
-                    return "Apagando equipo...";
-
-                case "REBOOT":
-                    AccionesSistema.Reiniciar();
-                    return "Reiniciando el equipo...";
-
-                case "LOGOUT":
-                    AccionesSistema.CerrarSesion();
-                    return "Cerrando sesión...";
-
+                // Acciones del mouse
                 case "MOVE_MOUSE":
                     {
                         if (datos == null)
-                            throw new Exception("Coordenadas no enviadas.");
+                            throw new Exception("Coordenadas no enviadas");
 
                         JsonElement elem = (JsonElement)datos;
                         int x = elem.GetProperty("x").GetInt32();
                         int y = elem.GetProperty("y").GetInt32();
 
                         AccionesControl.Mover(x, y);
-                        return $"Cursor movido a ({x},{y})";
+                        return null;
                     }
+
                 case "MOUSE_LEFT":
                     AccionesControl.ClickIzquierdo();
-                    return "Click izquierdo ejecutado";
+                    return null;
 
                 case "MOUSE_RIGHT":
                     AccionesControl.ClickDerecho();
-                    return "Click derecho ejecutado";
+                    return null;
 
                 case "MOUSE_DOUBLE":
                     AccionesControl.DobleClick();
-                    return "Doble clic ejecutado";
+                    return null;
 
+                // Accion de tomar screenshot
                 case "GET_SCREENSHOT":
                     return new { imagen = AccionesRemotas.TomarScreenshot() };
 
+                // Acciones de mandar mensajes
                 case "SHOW_MESSAGE":
-                    string mensaje = datos?.ToString() ?? "";
-                    return new { resultado = AccionesRemotas.MostrarMensaje(mensaje) };
+                    string texto = datos?.ToString() ?? "";
+                    return new { resultado = AccionesRemotas.MostrarMensaje(texto) };
 
                 default:
                     throw new InvalidOperationException($"Comando no reconocido: {comando}");
             }
         }
-
     }
 }
-

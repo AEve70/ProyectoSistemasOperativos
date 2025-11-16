@@ -48,6 +48,19 @@ namespace AppClienteControlador
             }
         }
 
+        public async Task<MensajesIO> EnviarSimple(string comando)
+        {
+            var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
+            await Enviar(solicitud);
+            return await Recibir();
+        }
+
+        public async Task<MensajesIO> Enviar(string comando, object datos)
+        {
+            var solicitud = new MensajesIO(comando, true, datos, "", "Cliente");
+            await Enviar(solicitud);
+            return await Recibir();
+        }
         public async Task<MensajesIO> Recibir()
         {
             try
