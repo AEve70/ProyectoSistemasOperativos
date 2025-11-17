@@ -211,7 +211,7 @@ namespace AppClienteControlador
         {
 
             ControlRemoto = false;
-            hook.Desinstalar();
+            hook?.Desinstalar();
             timer_mouse.Stop();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
@@ -466,6 +466,11 @@ namespace AppClienteControlador
         }
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }

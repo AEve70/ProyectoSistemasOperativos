@@ -156,6 +156,7 @@ namespace AppClienteControlador
             this.label4.Size = new System.Drawing.Size(38, 15);
             this.label4.TabIndex = 7;
             this.label4.Text = "label4";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // lbl_estado
             // 

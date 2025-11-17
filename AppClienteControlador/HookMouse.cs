@@ -40,10 +40,10 @@ namespace AppClienteControlador
         private const int WM_RBUTTONDOWN = 0x0204;
         private const int WM_LBUTTONDBLCLK = 0x0203;
 
-        private IntPtr hookId = IntPtr.Zero;
+        private static IntPtr hookId = IntPtr.Zero;
 
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
-        private LowLevelMouseProc proc;
+        private static LowLevelMouseProc proc;
 
         // 
 
@@ -55,7 +55,7 @@ namespace AppClienteControlador
 
         public void Desinstalar()
         {
-            UnhookWindowsHookEx(hookId);
+            if(hookId != IntPtr.Zero) UnhookWindowsHookEx(hookId);
         }
 
         private IntPtr SetHook(LowLevelMouseProc proc)
