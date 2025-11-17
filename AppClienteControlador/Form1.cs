@@ -23,7 +23,7 @@ namespace AppClienteControlador
         private bool ControlRemoto;
         private FormScrenshot ventanaCaptura;
 
-        private Point ultimoEnvio = Point.Empty; // Para filtrar movimiento repetitivo del mouse
+        private FormRemote ventanaRemota; // << NUEVO FORM PARA CONTROL REMOTO
 
         // Diccionario visible al usuario → comando interno real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
@@ -43,12 +43,6 @@ namespace AppClienteControlador
         {
             InitializeComponent();
             client = new Cliente();
-
-            // ============================================================
-            // 🔥 Filtro global de clics — captura clics en TODO el formulario,
-            // incluso sobre botones y cualquier control hijo.
-            // ============================================================
-            Application.AddMessageFilter(new ClickFilter(client, () => ControlRemoto));
 
             ControlRemoto = false;
             label4.Text = "Desconectado";
@@ -111,6 +105,9 @@ namespace AppClienteControlador
             }
 
             client.Desconectar();
+
+            ControlRemoto = false;
+            ventanaRemota?.Desactivar();
 
             label4.Text = "Desconectado";
             label4.ForeColor = Color.Red;
@@ -239,70 +236,24 @@ namespace AppClienteControlador
 
             ControlRemoto = true;
 
-            timer_mouse.Interval = 70; // FPS moderado
-            timer_mouse.Start();
+            if (ventanaRemota == null || ventanaRemota.IsDisposed)
+                ventanaRemota = new FormRemote(client);
 
-            richTextBox1.Text = "Control remoto ACTIVADO.";
+            ventanaRemota.Show();
+            ventanaRemota.Activar();
+            ventanaRemota.BringToFront();
+
+            richTextBox1.Text = "Control remoto ACTIVADO.\nUse la ventana de control remoto para mover/clickear.";
         }
 
         private void button2_Click(object sender, EventArgs e) // Detener
         {
             ControlRemoto = false;
-            timer_mouse.Stop();
+
+            ventanaRemota?.Desactivar();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
         }
-
-        private async void timer_mouse_Tick(object sender, EventArgs e)
-        {
-            if (!ControlRemoto || !client.Conectado)
-                return;
-
-            Point pos = Cursor.Position;
-
-            // Enviar solo si el movimiento es real
-            if (Math.Abs(pos.X - ultimoEnvio.X) < 2 && Math.Abs(pos.Y - ultimoEnvio.Y) < 2)
-                return;
-
-            ultimoEnvio = pos;
-
-            await client.Enviar(
-                new MensajesIO("MOVE_MOUSE", true, new { x = pos.X, y = pos.Y }, "", "Cliente")
-            );
-        }
-
-        // ===============================================================
-        // ⚠ WNDPROC ORIGINAL - COMENTADO PORQUE YA NO ES NECESARIO
-        //    LO DEJAMOS AQUÍ POR SI LO QUERÉS REACTIVAR LUEGO
-        // ===============================================================
-        /*
-        protected override void WndProc(ref Message m)
-        {
-            const int WM_LBUTTONDOWN = 0x0201;
-            const int WM_RBUTTONDOWN = 0x0204;
-            const int WM_LBUTTONDBLCLK = 0x0203;
-
-            base.WndProc(ref m);
-
-            if (!ControlRemoto || !client.Conectado)
-                return;
-
-            switch (m.Msg)
-            {
-                case WM_LBUTTONDOWN:
-                    _ = client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
-                    break;
-
-                case WM_RBUTTONDOWN:
-                    _ = client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
-                    break;
-
-                case WM_LBUTTONDBLCLK:
-                    _ = client.Enviar(new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente"));
-                    break;
-            }
-        }
-        */
 
         // ======================
         // CAPTURA DE PANTALLA
@@ -526,7 +477,7 @@ namespace AppClienteControlador
             }
 
             ControlRemoto = false;
-            timer_mouse.Stop();
+            ventanaRemota?.Desactivar();
 
             label4.Text = "Desconectado";
             label4.ForeColor = Color.Red;

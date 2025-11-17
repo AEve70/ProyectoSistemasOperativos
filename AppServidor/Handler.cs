@@ -41,24 +41,26 @@ namespace AppServidor
                     Console.WriteLine($"Cliente {cliente.Client.RemoteEndPoint}: {linea}");
 
                     MensajesIO solicitud;
+
+                    // ===========================
+                    // VALIDACIÓN DE JSON SEGURO
+                    // ===========================
                     try
                     {
-                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea); //Convierte un JSON en objeto 
+                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea);
                     }
                     catch
                     {
-                        writer.WriteLine(JsonSerializer.Serialize(
-                            new MensajesIO("ERROR", false, null, "JSON inválido", "Servidor")
-                        ));
+                        EnviarError(writer, "JSON inválido");
                         continue;
                     }
 
-                    //Comprobar que se envie un comando
+                    // ===========================
+                    // VALIDAR COMANDO VACÍO
+                    // ===========================
                     if (solicitud == null || string.IsNullOrWhiteSpace(solicitud.Comando))
                     {
-                        writer.WriteLine(JsonSerializer.Serialize(
-                            new MensajesIO("ERROR", false, null, "Comando vacío", "Servidor")
-                        ));
+                        EnviarError(writer, "Comando vacío");
                         continue;
                     }
 
@@ -70,23 +72,40 @@ namespace AppServidor
                     }
                     catch (Exception ex)
                     {
-                        writer.WriteLine(JsonSerializer.Serialize(
-                            new MensajesIO(solicitud.Comando, false, null, ex.Message, "Servidor")
-                        ));
+                        //Error controlado del servidor
+                        EnviarError(writer, ex.Message, solicitud.Comando);
                         continue;
                     }
 
-                    //🔥🔥🔥 NO ENVIAR RESPUESTA SI ES CONTROL REMOTO 🔥🔥🔥
+                    // =====================================================================
+                    // ⚠ SISTEMA ANTI-SATURACIÓN ⚠
+                    // Estos comandos NO deben responder nada
+                    // =====================================================================
                     if (solicitud.Comando.StartsWith("MOVE_") ||
                         solicitud.Comando.StartsWith("MOUSE_"))
                     {
-                        continue; // NO enviar nada → evita saturación y desconexión
+                        // NO respondemos nada → evita saturación y desconexión
+                        continue;
                     }
 
-                    //Enviar respuesta normal
-                    var respuesta = new MensajesIO(solicitud.Comando, true, datosRespuesta, "OK", "Servidor");
+                    // ===========================
+                    // RESPUESTA NORMAL
+                    // ===========================
+                    var respuesta = new MensajesIO(
+                        solicitud.Comando,
+                        true,
+                        datosRespuesta,
+                        "OK",
+                        "Servidor"
+                    );
+
                     writer.WriteLine(JsonSerializer.Serialize(respuesta));
                 }
+            }
+            catch (IOException)
+            {
+                // Cliente cerró socket abruptamente → no es error crítico  
+                Console.WriteLine("Cliente desconectado abruptamente.");
             }
             catch (Exception e)
             {
@@ -96,6 +115,13 @@ namespace AppServidor
             {
                 cliente.Close();
             }
+        }
+
+        //Enviar error estandarizado
+        private void EnviarError(StreamWriter writer, string mensaje, string comando = "ERROR")
+        {
+            var err = new MensajesIO(comando, false, null, mensaje, "Servidor");
+            writer.WriteLine(JsonSerializer.Serialize(err));
         }
 
         //Este metodo realiza las solicitudes del usuario
@@ -124,17 +150,20 @@ namespace AppServidor
                 case "REBOOT": AccionesSistema.Reiniciar(); return "OK";
                 case "LOGOUT": AccionesSistema.CerrarSesion(); return "OK";
 
-                // MOUSE
+                // CONTROL REMOTO (SIN RESPUESTA)
                 case "MOVE_MOUSE":
                     JsonElement e = (JsonElement)datos;
-                    AccionesControl.Mover(e.GetProperty("x").GetInt32(), e.GetProperty("y").GetInt32());
+                    AccionesControl.Mover(
+                        e.GetProperty("x").GetInt32(),
+                        e.GetProperty("y").GetInt32()
+                    );
                     return null;
 
                 case "MOUSE_LEFT": AccionesControl.ClickIzquierdo(); return null;
                 case "MOUSE_RIGHT": AccionesControl.ClickDerecho(); return null;
                 case "MOUSE_DOUBLE": AccionesControl.DobleClick(); return null;
 
-                // MENSAJE
+                // MENSAJE REMOTO
                 case "SHOW_MESSAGE":
                     string msg = datos?.ToString() ?? "";
                     AccionesRemotas.MostrarMensaje(msg);
