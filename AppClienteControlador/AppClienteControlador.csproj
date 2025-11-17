@@ -52,6 +52,7 @@
     <Compile Include="..\MensajesIO.cs">
       <Link>MensajesIO.cs</Link>
     </Compile>
+    <Compile Include="ClickFilter.cs" />
     <Compile Include="Cliente.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

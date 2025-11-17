@@ -44,6 +44,12 @@ namespace AppClienteControlador
             InitializeComponent();
             client = new Cliente();
 
+            // ============================================================
+            // 🔥 Filtro global de clics — captura clics en TODO el formulario,
+            // incluso sobre botones y cualquier control hijo.
+            // ============================================================
+            Application.AddMessageFilter(new ClickFilter(client, () => ControlRemoto));
+
             ControlRemoto = false;
             label4.Text = "Desconectado";
             label4.ForeColor = Color.Coral;
@@ -53,7 +59,6 @@ namespace AppClienteControlador
             client.ConexionCerrada += ServidorDesconectado; //Detectar conexion cerrada
         }
 
-        //Llenar el combo box
         private void llenarComboBox()
         {
             cbx_datos.Items.Clear();
@@ -61,7 +66,9 @@ namespace AppClienteControlador
             cbx_datos.SelectedIndex = 0;
         }
 
+        // ======================
         // CONECTAR
+        // ======================
         private async void btn_conectar_Click(object sender, EventArgs e)
         {
             string ip = txt_ip.Text.Trim();
@@ -92,7 +99,9 @@ namespace AppClienteControlador
             }
         }
 
+        // ======================
         // DESCONECTAR
+        // ======================
         private void btn_desconectar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -108,12 +117,14 @@ namespace AppClienteControlador
             richTextBox1.Clear();
         }
 
+        // ======================
         // CONSULTAR INFORMACIÓN
+        // ======================
         private async void btn_consultar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
             {
-                MessageBox.Show("No hay conexión activa");
+                MessageBox.Show("No hay conexión.");
                 return;
             }
 
@@ -148,84 +159,35 @@ namespace AppClienteControlador
         // ======================
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
-
             try
             {
                 var r = await client.EnviarSimple("VOL_UP");
-
-                if (r == null)
-                {
-                    richTextBox1.Text = "El servidor se desconectó.";
-                    ServidorDesconectado();
-                    return;
-                }
-
+                if (r == null) { ServidorDesconectado(); return; }
                 richTextBox1.Text = r.Mensaje;
             }
-            catch
-            {
-                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
-                ServidorDesconectado();
-            }
+            catch { ServidorDesconectado(); }
         }
 
         private async void btn_bajarVolumen_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
             try
             {
                 var r = await client.EnviarSimple("VOL_DOWN");
-
-                if (r == null)
-                {
-                    richTextBox1.Text = "El servidor se desconectó.";
-                    ServidorDesconectado();
-                    return;
-                }
-
+                if (r == null) { ServidorDesconectado(); return; }
                 richTextBox1.Text = r.Mensaje;
             }
-            catch
-            {
-                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
-                ServidorDesconectado();
-            }
+            catch { ServidorDesconectado(); }
         }
 
         private async void btn_silenciar_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
             try
             {
                 var r = await client.EnviarSimple("MUTE");
-
-                if (r == null)
-                {
-                    richTextBox1.Text = "El servidor se desconectó.";
-                    ServidorDesconectado();
-                    return;
-                }
-
+                if (r == null) { ServidorDesconectado(); return; }
                 richTextBox1.Text = r.Mensaje;
             }
-            catch
-            {
-                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
-                ServidorDesconectado();
-            }
+            catch { ServidorDesconectado(); }
         }
 
         // ======================
@@ -233,84 +195,35 @@ namespace AppClienteControlador
         // ======================
         private async void btn_apagar_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
             try
             {
                 var r = await client.EnviarSimple("SHUTDOWN");
-
-                if (r == null)
-                {
-                    richTextBox1.Text = "El servidor se desconectó.";
-                    ServidorDesconectado();
-                    return;
-                }
-
+                if (r == null) { ServidorDesconectado(); return; }
                 richTextBox1.Text = r.Mensaje;
             }
-            catch
-            {
-                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
-                ServidorDesconectado();
-            }
+            catch { ServidorDesconectado(); }
         }
 
         private async void btn_reiniciar_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
             try
             {
                 var r = await client.EnviarSimple("REBOOT");
-
-                if (r == null)
-                {
-                    richTextBox1.Text = "El servidor se desconectó.";
-                    ServidorDesconectado();
-                    return;
-                }
-
+                if (r == null) { ServidorDesconectado(); return; }
                 richTextBox1.Text = r.Mensaje;
             }
-            catch
-            {
-                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
-                ServidorDesconectado();
-            }
+            catch { ServidorDesconectado(); }
         }
 
         private async void btn_cerrarSesion_Click(object sender, EventArgs e)
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
-
             try
             {
                 var r = await client.EnviarSimple("LOGOUT");
-
-                if (r == null)
-                {
-                    richTextBox1.Text = "El servidor se desconectó.";
-                    ServidorDesconectado();
-                    return;
-                }
-
+                if (r == null) { ServidorDesconectado(); return; }
                 richTextBox1.Text = r.Mensaje;
             }
-            catch
-            {
-                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
-                ServidorDesconectado();
-            }
+            catch { ServidorDesconectado(); }
         }
 
         // ======================
@@ -334,11 +247,6 @@ namespace AppClienteControlador
 
         private void button2_Click(object sender, EventArgs e) // Detener
         {
-            if (!client.Conectado)
-            {
-                MessageBox.Show("No hay conexion activa");
-                return;
-            }
             ControlRemoto = false;
             timer_mouse.Stop();
 
@@ -358,12 +266,16 @@ namespace AppClienteControlador
 
             ultimoEnvio = pos;
 
-            // Handler no responde a MOVE_MOUSE → no hay Recibir() → no falla
             await client.Enviar(
                 new MensajesIO("MOVE_MOUSE", true, new { x = pos.X, y = pos.Y }, "", "Cliente")
             );
         }
 
+        // ===============================================================
+        // ⚠ WNDPROC ORIGINAL - COMENTADO PORQUE YA NO ES NECESARIO
+        //    LO DEJAMOS AQUÍ POR SI LO QUERÉS REACTIVAR LUEGO
+        // ===============================================================
+        /*
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
@@ -378,18 +290,19 @@ namespace AppClienteControlador
             switch (m.Msg)
             {
                 case WM_LBUTTONDOWN:
-                    client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
+                    _ = client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
                     break;
 
                 case WM_RBUTTONDOWN:
-                    client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
+                    _ = client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
                     break;
 
                 case WM_LBUTTONDBLCLK:
-                    client.Enviar(new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente"));
+                    _ = client.Enviar(new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente"));
                     break;
             }
         }
+        */
 
         // ======================
         // CAPTURA DE PANTALLA
