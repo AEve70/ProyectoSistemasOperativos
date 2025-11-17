@@ -197,14 +197,21 @@ namespace AppClienteControlador
             }
 
             ControlRemoto = true;
+
+            // Hook con envío NO BLOQUEANTE
+            hook = new HookMouse(cmd =>
+            {
+                if (ControlRemoto && client.Conectado)
+                {
+                    // No usamos await → evita bloquear sockets
+                    _ = client.Enviar(new MensajesIO(cmd, true, null, "", "Cliente"));
+                }
+            });
+
             hook.Instalar();
 
             timer_mouse.Interval = 40;
             timer_mouse.Start();
-
-            
-            timer_eventos.Interval = 15;
-            timer_eventos.Start();
 
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
@@ -258,15 +265,15 @@ namespace AppClienteControlador
             switch (m.Msg)
             {
                 case WM_LBUTTONDOWN:
-                    _ = client.EnviarSimple("MOUSE_LEFT");
+                    _ = client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
                     break;
 
                 case WM_RBUTTONDOWN:
-                    _ = client.EnviarSimple("MOUSE_RIGHT");
+                    _ = client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
                     break;
 
                 case WM_LBUTTONDBLCLK:
-                    _ = client.EnviarSimple("MOUSE_DOUBLE");
+                    _ = client.Enviar(new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente"));
                     break;
             }
         }
@@ -451,23 +458,31 @@ namespace AppClienteControlador
         //El equipo cliente debe detectar esa desconexion y detener las acciones que estaba realizando en el equipo remoto
         private void ServidorDesconectado()
         {
-            if (InvokeRequired)
+            try
             {
-                Invoke((Action)ServidorDesconectado);
-                return;
+                if (InvokeRequired)
+                {
+                    BeginInvoke((Action)ServidorDesconectado);
+                    return;
+                }
+
+                ControlRemoto = false;
+                hook?.Desinstalar();
+                timer_mouse.Stop();
+
+                label4.Text = "Desconectado";
+                label4.ForeColor = Color.Red;
+
+                richTextBox1.Text =
+                    "El servidor se desconectó (apagado/reinicio/cierre de sesión).";
+
+                if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
+                    ventanaCaptura.Close();
             }
-
-            ControlRemoto = false;
-            timer_mouse.Stop();
-            timer_eventos.Stop();
-
-            label4.Text = "Desconectado";
-            label4.ForeColor = Color.Red;
-
-            richTextBox1.Text = "El servidor se desconectó (apagado/reinicio/cierre de sesión).";
-
-            if (ventanaCaptura != null && !ventanaCaptura.IsDisposed)
-                ventanaCaptura.Close();
+            catch
+            {
+                // Nunca permitir que este método explote
+            }
         }
 
         private void toolTip1_Popup(object sender, PopupEventArgs e) { }

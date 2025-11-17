@@ -27,9 +27,7 @@ namespace AppClienteControlador
         [DllImport("kernel32.dll")]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
-
         // Delegado para enviar los comandos al servidor
-        // (el servidor usa este comando para saber qué acción del mouse hacer)
         private readonly Action<string> enviarComando;
 
         public HookMouse(Action<string> enviarComandoCallback)
@@ -43,39 +41,32 @@ namespace AppClienteControlador
         private const int WM_RBUTTONDOWN = 0x0204;
         private const int WM_LBUTTONDBLCLK = 0x0203;
 
-        // Guardar el ID del hook
-        private IntPtr hookId = IntPtr.Zero;
-
-        // Guardar el delegado para evitar que Garbage Collector lo elimine
-        private LowLevelMouseProc proc;
+        private static IntPtr hookId = IntPtr.Zero;
 
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+        private static LowLevelMouseProc proc;
 
-
-        //Instala el hook global de mouse
+        // Instalar el hook global del mouse
         public void Instalar()
         {
-            proc = HookCallback;          // SE GUARDA para que el GC NO LO BORRE
+            proc = HookCallback;
             hookId = SetHook(proc);
         }
 
-        //Desinstala el hook
+        // Desinstalar el hook
         public void Desinstalar()
         {
             if (hookId != IntPtr.Zero)
-            {
                 UnhookWindowsHookEx(hookId);
-                hookId = IntPtr.Zero;
-            }
-        }
 
+            hookId = IntPtr.Zero;
+        }
 
         private IntPtr SetHook(LowLevelMouseProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
             using (ProcessModule curModule = curProcess.MainModule)
             {
-                //Instala el hook que funciona en TODA la PC, no solo dentro del Forms
                 return SetWindowsHookEx(
                     WH_MOUSE_LL, proc,
                     GetModuleHandle(curModule.ModuleName),
@@ -83,7 +74,6 @@ namespace AppClienteControlador
                 );
             }
         }
-
 
         // Sirve para detectar los clicks del cliente sin importar si esta afuera o dentro del forms
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -112,9 +102,7 @@ namespace AppClienteControlador
             }
             catch
             {
-                // IMPORTANTE:
-                // Nunca permitir que una excepción rompa el hook global.
-                // Si eso pasa, Windows desinstala el hook automáticamente.
+                // Evitar que se caiga el hook si ocurre una excepción
             }
 
             return CallNextHookEx(hookId, nCode, wParam, lParam);
