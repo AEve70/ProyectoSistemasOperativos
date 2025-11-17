@@ -22,8 +22,8 @@ namespace AppClienteControlador
         private Cliente client;
         private bool ControlRemoto;
         private FormScrenshot ventanaCaptura;
-        private HookMouse hook;
 
+        private Point ultimoEnvio = Point.Empty; // Para filtrar movimiento repetitivo del mouse
 
         // Diccionario visible al usuario → comando interno real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
@@ -50,17 +50,10 @@ namespace AppClienteControlador
 
             llenarComboBox();
 
-            //Para uso del mouse 
-            hook = new HookMouse(cmd =>
-            {
-                if (ControlRemoto && client.Conectado)
-                    _ = client.EnviarSimple(cmd);
-            });
-
             client.ConexionCerrada += ServidorDesconectado; //Detectar conexion cerrada
         }
 
-        //Llenar el combo box los nombres relacionados a los comandos mas que todo para entendimiento del usuario
+        //Llenar el combo box
         private void llenarComboBox()
         {
             cbx_datos.Items.Clear();
@@ -68,11 +61,9 @@ namespace AppClienteControlador
             cbx_datos.SelectedIndex = 0;
         }
 
-        //Metodos para realizar la conexion - por defecto tendra la local, el usuario puede cambiar la Ip
-        //Tambien por defecto se usara el puerto 8000 pero se puede usar otro de preferencia siempre y cuando no este ocupado
+        // CONECTAR
         private async void btn_conectar_Click(object sender, EventArgs e)
         {
-            //Obtenemos la ip y el puerto (se hace un cast a Int)
             string ip = txt_ip.Text.Trim();
 
             if (!int.TryParse(txt_puerto.Text, out int puerto))
@@ -83,9 +74,9 @@ namespace AppClienteControlador
 
             btn_conectar.Enabled = false;
             label4.Text = "Conectando...";
-            label4.ForeColor = Color.Goldenrod; //Para diferenciar la accion 
+            label4.ForeColor = Color.Goldenrod;
 
-            bool ok = await client.Conectar(ip, puerto); //Espera la respuesta del servidor
+            bool ok = await client.Conectar(ip, puerto);
 
             btn_conectar.Enabled = true;
 
@@ -100,7 +91,8 @@ namespace AppClienteControlador
                 label4.ForeColor = Color.Red;
             }
         }
-        //Metodo para desconectarse del servidor
+
+        // DESCONECTAR
         private void btn_desconectar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -116,79 +108,214 @@ namespace AppClienteControlador
             richTextBox1.Clear();
         }
 
-        //Metodos para obtener informacion del equipo remoto
-
+        // CONSULTAR INFORMACIÓN
         private async void btn_consultar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
             {
-                MessageBox.Show("No hay conexión.");
+                MessageBox.Show("No hay conexión activa");
                 return;
             }
 
             string eleccion = cbx_datos.SelectedItem?.ToString() ?? "";
             string comando = comandos[eleccion];
 
-            var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
-            await client.Enviar(solicitud);
+            try
+            {
+                var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
+                await client.Enviar(solicitud);
 
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta != null ?
-                TraducirRespuesta(respuesta) :
-                "No se recibió respuesta.";
+                var respuesta = await client.Recibir();
+
+                if (respuesta == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = TraducirRespuesta(respuesta);
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
-        // Controles de volumen
-
+        // ======================
+        // CONTROLES DE VOLUMEN
+        // ======================
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
-            await EnviarSimple("VOL_UP");
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa");
+                return;
+            }
+
+            try
+            {
+                var r = await client.EnviarSimple("VOL_UP");
+
+                if (r == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = r.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
         private async void btn_bajarVolumen_Click(object sender, EventArgs e)
         {
-            await EnviarSimple("VOL_DOWN");
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa");
+                return;
+            }
+            try
+            {
+                var r = await client.EnviarSimple("VOL_DOWN");
+
+                if (r == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = r.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
         private async void btn_silenciar_Click(object sender, EventArgs e)
         {
-            await EnviarSimple("MUTE");
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa");
+                return;
+            }
+            try
+            {
+                var r = await client.EnviarSimple("MUTE");
+
+                if (r == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = r.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
-        //Metodo para evitar repetir codigo al hacer solicitudes al servidor
-        private async Task EnviarSimple(string cmd)
+        // ======================
+        // ACCIONES DE SISTEMA
+        // ======================
+        private async void btn_apagar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
             {
-                MessageBox.Show("No hay conexión.");
+                MessageBox.Show("No hay conexion activa");
                 return;
             }
+            try
+            {
+                var r = await client.EnviarSimple("SHUTDOWN");
 
-            var solicitud = new MensajesIO(cmd, true, null, "", "Cliente");
-            await client.Enviar(solicitud);
+                if (r == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
 
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta?.Mensaje ?? "OK";
-        }
-
-        // Metodos del sistema apagar-reiniciar-cerrar sesion
-
-        private async void btn_apagar_Click(object sender, EventArgs e)
-        {
-            await EnviarSimple("SHUTDOWN");
+                richTextBox1.Text = r.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
         private async void btn_reiniciar_Click(object sender, EventArgs e)
         {
-            await EnviarSimple("REBOOT");
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa");
+                return;
+            }
+            try
+            {
+                var r = await client.EnviarSimple("REBOOT");
+
+                if (r == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = r.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
         private async void btn_cerrarSesion_Click(object sender, EventArgs e)
         {
-            await EnviarSimple("LOGOUT");
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa");
+                return;
+            }
+
+            try
+            {
+                var r = await client.EnviarSimple("LOGOUT");
+
+                if (r == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = r.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
-        //Metodos de control remoto
+        // ======================
+        // CONTROL REMOTO
+        // ======================
         private void button1_Click(object sender, EventArgs e) // Activar
         {
             if (!client.Conectado)
@@ -198,36 +325,45 @@ namespace AppClienteControlador
             }
 
             ControlRemoto = true;
-            hook.Instalar();
 
-            timer_mouse.Interval = 40;
+            timer_mouse.Interval = 70; // FPS moderado
             timer_mouse.Start();
 
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
 
-        //Metodo para detener el control remoto a traves del mouse
         private void button2_Click(object sender, EventArgs e) // Detener
         {
-
+            if (!client.Conectado)
+            {
+                MessageBox.Show("No hay conexion activa");
+                return;
+            }
             ControlRemoto = false;
-            hook.Desinstalar();
             timer_mouse.Stop();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
         }
 
-        // Movimiento del mouse
         private async void timer_mouse_Tick(object sender, EventArgs e)
         {
-            if (!ControlRemoto || !client.Conectado) return;
+            if (!ControlRemoto || !client.Conectado)
+                return;
 
             Point pos = Cursor.Position;
 
-            await client.Enviar("MOVE_MOUSE", new { x = pos.X, y = pos.Y });
+            // Enviar solo si el movimiento es real
+            if (Math.Abs(pos.X - ultimoEnvio.X) < 2 && Math.Abs(pos.Y - ultimoEnvio.Y) < 2)
+                return;
+
+            ultimoEnvio = pos;
+
+            // Handler no responde a MOVE_MOUSE → no hay Recibir() → no falla
+            await client.Enviar(
+                new MensajesIO("MOVE_MOUSE", true, new { x = pos.X, y = pos.Y }, "", "Cliente")
+            );
         }
 
-        // Deteccion de los clicls
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
@@ -242,22 +378,22 @@ namespace AppClienteControlador
             switch (m.Msg)
             {
                 case WM_LBUTTONDOWN:
-                    _ = client.EnviarSimple("MOUSE_LEFT");
+                    client.Enviar(new MensajesIO("MOUSE_LEFT", true, null, "", "Cliente"));
                     break;
 
                 case WM_RBUTTONDOWN:
-                    _ = client.EnviarSimple("MOUSE_RIGHT");
+                    client.Enviar(new MensajesIO("MOUSE_RIGHT", true, null, "", "Cliente"));
                     break;
 
                 case WM_LBUTTONDBLCLK:
-                    _ = client.EnviarSimple("MOUSE_DOUBLE");
+                    client.Enviar(new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente"));
                     break;
             }
         }
 
-
-        // Captura de pantalla
-
+        // ======================
+        // CAPTURA DE PANTALLA
+        // ======================
         private async void btn_screenshot_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -266,17 +402,29 @@ namespace AppClienteControlador
                 return;
             }
 
-            // pedir la captura al servidor
-            var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
-            await client.Enviar(solicitud);
+            try
+            {
+                var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
+                await client.Enviar(solicitud);
 
-            var respuesta = await client.Recibir();
+                var respuesta = await client.Recibir();
 
-            // usar el helper para mostrarla
-            MostrarCaptura(respuesta);
+                if (respuesta == null)
+                {
+                    MessageBox.Show("El servidor se desconectó.");
+                    ServidorDesconectado();
+                    return;
+                }
+
+                MostrarCaptura(respuesta);
+            }
+            catch
+            {
+                MessageBox.Show("El servidor se desconectó inesperadamente.");
+                ServidorDesconectado();
+            }
         }
 
-        //Metodo que recibe los bytes que forman la imagen y abre un form con un picture box para mostrar la captura
         private void MostrarCaptura(MensajesIO respuesta)
         {
             try
@@ -287,7 +435,6 @@ namespace AppClienteControlador
                     return;
                 }
 
-                // Datos → JsonElement
                 JsonElement root = JsonSerializer.Deserialize<JsonElement>(
                     JsonSerializer.Serialize(respuesta.Datos));
 
@@ -304,11 +451,10 @@ namespace AppClienteControlador
                 {
                     Image img = Image.FromStream(ms);
 
-                    // si la ventana no existe o está cerrada, la creamos
                     if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
                         ventanaCaptura = new FormScrenshot();
 
-                    ventanaCaptura.mostrarCaptura(img); // aquí adentro usás el PictureBox
+                    ventanaCaptura.mostrarCaptura(img);
                     ventanaCaptura.Show();
                     ventanaCaptura.BringToFront();
                 }
@@ -319,8 +465,9 @@ namespace AppClienteControlador
             }
         }
 
-        // metodo basico para mostrar un mensaje
-
+        // ======================
+        // ENVIAR MENSAJE REMOTO
+        // ======================
         private async void btn_message_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -336,15 +483,29 @@ namespace AppClienteControlador
                 return;
             }
 
-            var solicitud = new MensajesIO("SHOW_MESSAGE", true, texto, "", "Cliente");
-            await client.Enviar(solicitud);
+            try
+            {
+                var respuesta = await client.Enviar("SHOW_MESSAGE", texto);
 
-            var respuesta = await client.Recibir();
-            richTextBox1.Text = respuesta?.Mensaje ?? "Mensaje enviado.";
+                if (respuesta == null)
+                {
+                    richTextBox1.Text = "El servidor se desconectó.";
+                    ServidorDesconectado();
+                    return;
+                }
+
+                richTextBox1.Text = respuesta.Mensaje;
+            }
+            catch
+            {
+                richTextBox1.Text = "El servidor se desconectó inesperadamente.";
+                ServidorDesconectado();
+            }
         }
 
-        // Como las solicitudes y respuestas estan en formato JSON, se necesita convertir esa estructura en un String común para ser legible al usuario
-
+        // ======================
+        // TRADUCIR RESPUESTAS
+        // ======================
         private string TraducirRespuesta(MensajesIO respuesta)
         {
             if (respuesta == null || respuesta.Datos == null)
@@ -352,13 +513,11 @@ namespace AppClienteControlador
 
             try
             {
-                // Usar JSON para convertir un Json en el objeto original enviado por el servidor
                 JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
                     JsonSerializer.Serialize(respuesta.Datos)
                 );
 
                 string cmd = respuesta.Comando.ToUpper();
-
                 string texto;
 
                 switch (cmd)
@@ -419,7 +578,6 @@ namespace AppClienteControlador
             }
         }
 
-
         private static string TraducirDiscos(JsonElement elem)
         {
             string t = "Discos detectados:\n";
@@ -443,8 +601,9 @@ namespace AppClienteControlador
             return t;
         }
 
-        //Cuando se hagan acciones de apagar-reiniciar-cerrar sesion el equipo remoto cierra las aplicaciones por default
-        //El equipo cliente debe detectar esa desconexion y detener las acciones que estaba realizando en el equipo remoto
+        // ======================
+        // DETECTAR DESCONECCIÓN
+        // ======================
         private void ServidorDesconectado()
         {
             if (InvokeRequired)
@@ -467,7 +626,7 @@ namespace AppClienteControlador
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
         {
-
+            // método vacío generado por el diseñador
         }
     }
 }

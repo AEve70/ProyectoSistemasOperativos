@@ -48,7 +48,7 @@ namespace AppServidor
                     catch
                     {
                         writer.WriteLine(JsonSerializer.Serialize(
-                            new MensajesIO("ERROR", false, null, "JSON inválido", "Servidor") //En caso de una mala estructura
+                            new MensajesIO("ERROR", false, null, "JSON inválido", "Servidor")
                         ));
                         continue;
                     }
@@ -62,19 +62,30 @@ namespace AppServidor
                         continue;
                     }
 
-                    MensajesIO respuesta;
+                    object datosRespuesta = null;
 
                     try
                     {
-                        var datos = ProcesarComando(solicitud.Comando, solicitud.Datos);
-                        respuesta = new MensajesIO(solicitud.Comando, true, datos, "OK", "Servidor");
+                        datosRespuesta = ProcesarComando(solicitud.Comando, solicitud.Datos);
                     }
                     catch (Exception ex)
                     {
-                        respuesta = new MensajesIO(solicitud.Comando, false, null, ex.Message, "Servidor");
+                        writer.WriteLine(JsonSerializer.Serialize(
+                            new MensajesIO(solicitud.Comando, false, null, ex.Message, "Servidor")
+                        ));
+                        continue;
                     }
 
-                    writer.WriteLine(JsonSerializer.Serialize(respuesta)); //Convierte el objeto a JSON
+                    //🔥🔥🔥 NO ENVIAR RESPUESTA SI ES CONTROL REMOTO 🔥🔥🔥
+                    if (solicitud.Comando.StartsWith("MOVE_") ||
+                        solicitud.Comando.StartsWith("MOUSE_"))
+                    {
+                        continue; // NO enviar nada → evita saturación y desconexión
+                    }
+
+                    //Enviar respuesta normal
+                    var respuesta = new MensajesIO(solicitud.Comando, true, datosRespuesta, "OK", "Servidor");
+                    writer.WriteLine(JsonSerializer.Serialize(respuesta));
                 }
             }
             catch (Exception e)
@@ -117,11 +128,11 @@ namespace AppServidor
                 case "MOVE_MOUSE":
                     JsonElement e = (JsonElement)datos;
                     AccionesControl.Mover(e.GetProperty("x").GetInt32(), e.GetProperty("y").GetInt32());
-                    return "OK";
+                    return null;
 
-                case "MOUSE_LEFT": AccionesControl.ClickIzquierdo(); return "OK";
-                case "MOUSE_RIGHT": AccionesControl.ClickDerecho(); return "OK";
-                case "MOUSE_DOUBLE": AccionesControl.DobleClick(); return "OK";
+                case "MOUSE_LEFT": AccionesControl.ClickIzquierdo(); return null;
+                case "MOUSE_RIGHT": AccionesControl.ClickDerecho(); return null;
+                case "MOUSE_DOUBLE": AccionesControl.DobleClick(); return null;
 
                 // MENSAJE
                 case "SHOW_MESSAGE":

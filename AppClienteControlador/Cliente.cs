@@ -55,36 +55,31 @@ namespace AppClienteControlador
             }
         }
 
-        //Este metodo se usa cuando el comando a pasar no necesita parametros
+        //Este metodo se usa cuando el comando no necesita parámetros
         public async Task<MensajesIO> EnviarSimple(string comando)
         {
             var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
             await Enviar(solicitud);
+
             return await Recibir();
         }
 
-        //Si la accion que recibe comandos usa parametros se usa este metodo
+        //Si la accion usa parámetros
         public async Task<MensajesIO> Enviar(string comando, object datos)
         {
             var solicitud = new MensajesIO(comando, true, datos, "", "Cliente");
             await Enviar(solicitud);
+
             return await Recibir();
         }
 
-        //Recibe lo que el envia el servidor, el formato lo recibe en estructura JSON
+        //Recibe lo que envia el servidor en JSON
         public async Task<MensajesIO> Recibir()
         {
             try
             {
-                if (reader == null)
-                {
-                    ConexionCerrada?.Invoke();
-                    return null;
-                }
-
                 string respuesta = await reader.ReadLineAsync();
 
-                // Si el servidor se cayó: apagado / reinicio / logout / cierre app
                 if (respuesta == null)
                 {
                     ConexionCerrada?.Invoke();
@@ -103,27 +98,23 @@ namespace AppClienteControlador
             }
         }
 
-        //Metodo para desconectarse del servidor --el cliente debe desconectarse manualmente del servidor
+        //Metodo para desconectarse
         public void Desconectar()
         {
             try
             {
-                if (cliente != null)
-                {
-                    reader?.Close();
-                    writer?.Close();
-                    cliente.Close();
-                }
+                reader?.Close();
+                writer?.Close();
+                cliente?.Close();
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine("Error al desconectar: " + e);
             }
             finally
             {
-                cliente = null;
                 reader = null;
                 writer = null;
+                cliente = null;
             }
         }
     }
