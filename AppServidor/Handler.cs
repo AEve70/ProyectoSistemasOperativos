@@ -36,8 +36,22 @@ namespace AppServidor
 
                 string linea;
 
-                while ((linea = reader.ReadLine()) != null)
+                while (true)
                 {
+                    try
+                    {
+                        linea = reader.ReadLine();
+                        if (linea == null) break;
+                    }
+                    catch (IOException)
+                    {
+                        continue;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        break;
+                    }
+
                     Console.WriteLine($"Cliente {cliente.Client.RemoteEndPoint}: {linea}");
 
                     MensajesIO solicitud;
