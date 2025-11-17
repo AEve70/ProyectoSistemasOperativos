@@ -42,24 +42,23 @@ namespace AppClienteControlador
         private const int WM_LBUTTONDBLCLK = 0x0203;
 
         private static IntPtr hookId = IntPtr.Zero;
-
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
         private static LowLevelMouseProc proc;
 
-        // Instalar el hook global del mouse
+        // throttle para evitar enviar 200 eventos por segundo
+        private DateTime ultimaAccion = DateTime.MinValue;
+        private readonly int intervaloMs = 60;
+
         public void Instalar()
         {
             proc = HookCallback;
             hookId = SetHook(proc);
         }
 
-        // Desinstalar el hook
         public void Desinstalar()
         {
             if (hookId != IntPtr.Zero)
                 UnhookWindowsHookEx(hookId);
-
-            hookId = IntPtr.Zero;
         }
 
         private IntPtr SetHook(LowLevelMouseProc proc)
@@ -78,31 +77,31 @@ namespace AppClienteControlador
         // Sirve para detectar los clicks del cliente sin importar si esta afuera o dentro del forms
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            try
+            if (nCode >= 0)
             {
-                if (nCode >= 0) // Evento válido
+                int msg = wParam.ToInt32();
+                DateTime ahora = DateTime.Now;
+
+                // throttle: esperamos mínimo X ms entre comandos
+                if ((ahora - ultimaAccion).TotalMilliseconds < intervaloMs)
+                    return CallNextHookEx(hookId, nCode, wParam, lParam);
+
+                ultimaAccion = ahora;
+
+                switch (msg)
                 {
-                    int msg = wParam.ToInt32();
+                    case WM_LBUTTONDOWN:
+                        enviarComando("MOUSE_LEFT");
+                        break;
 
-                    switch (msg)
-                    {
-                        case WM_LBUTTONDOWN:
-                            enviarComando("MOUSE_LEFT");
-                            break;
+                    case WM_RBUTTONDOWN:
+                        enviarComando("MOUSE_RIGHT");
+                        break;
 
-                        case WM_RBUTTONDOWN:
-                            enviarComando("MOUSE_RIGHT");
-                            break;
-
-                        case WM_LBUTTONDBLCLK:
-                            enviarComando("MOUSE_DOUBLE");
-                            break;
-                    }
+                    case WM_LBUTTONDBLCLK:
+                        enviarComando("MOUSE_DOUBLE");
+                        break;
                 }
-            }
-            catch
-            {
-                // Evitar que se caiga el hook si ocurre una excepción
             }
 
             return CallNextHookEx(hookId, nCode, wParam, lParam);

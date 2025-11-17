@@ -251,7 +251,7 @@ namespace AppClienteControlador
         }
 
         // Deteccion de los clicks dentro del formulario
-        protected override void WndProc(ref Message m)
+       /* protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
             const int WM_RBUTTONDOWN = 0x0204;
@@ -276,7 +276,7 @@ namespace AppClienteControlador
                     _ = client.Enviar(new MensajesIO("MOUSE_DOUBLE", true, null, "", "Cliente"));
                     break;
             }
-        }
+        }*/
 
         // Captura de pantalla
         private async void btn_screenshot_Click(object sender, EventArgs e)
