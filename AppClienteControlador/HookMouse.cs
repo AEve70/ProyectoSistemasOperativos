@@ -4,8 +4,22 @@ using System.Runtime.InteropServices;
 
 namespace AppClienteControlador
 {
+    //Ayuda a imitar el control del mouse en la computadora servidor como si fuera el cliente
     public class HookMouse
     {
+        //Importar librerias de user32
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn,
+            IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
         // Delegado para enviar los comandos al servidor
         private readonly Action<string> enviarComando;
 
@@ -51,7 +65,7 @@ namespace AppClienteControlador
             }
         }
 
-        // Sirve para detectar los clicks del cliente
+        // Sirve para detectar los clicks del cliente sin importar si esta afuera o dentro del forms
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode >= 0) // Evento válido
@@ -77,19 +91,6 @@ namespace AppClienteControlador
             return CallNextHookEx(hookId, nCode, wParam, lParam);
         }
 
-        //Importar librerias de user32
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn,
-            IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
-            IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
+      
     }
 }

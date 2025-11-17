@@ -12,17 +12,17 @@ namespace AppServidor.Servicios
     {
         public static void Apagar()
         {
-            Process.Start("shutdown", "/s /t 0"); // Ejecuta el comando shutdown inmediatamente
+            Process.Start("shutdown", "/s /t 0"); // /s = shutdown /t 0 ejecutar de inmediato
         }
 
         public static void Reiniciar()
         {
-            Process.Start("shutdown", "/r /t 0");
+            Process.Start("shutdown", "/r /t 0"); // /r = reboot /t 0 ejecutar de inmediato
         }
 
         public static void CerrarSesion()
         {
-            Process.Start("shutdown", "/l");
+            Process.Start("shutdown", "/l"); // /l = logout
         }
 
 

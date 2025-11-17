@@ -6,7 +6,8 @@ using System.Management;
 using System.Runtime.InteropServices;
 
 namespace AppServidor.Servicios
-{
+{   //Clase que sirve para obtener datos del equipo remoto 
+    //En la mayoria de los casos devuelve objetos 
     public static class SystemInfo
     {
         //Como algunas difieren de la version de Windows se usara User32 para obtener algunas funciones
@@ -18,7 +19,7 @@ namespace AppServidor.Servicios
         {
             try
             {
-                var searcher = new ManagementObjectSearcher("SELECT Caption, Version FROM Win32_OperatingSystem");
+                var searcher = new ManagementObjectSearcher("SELECT Caption, Version FROM Win32_OperatingSystem"); // sirve para consultar información interna del sistema operativo Windows 
                 foreach (var os in searcher.Get())
                 {
                     return new
@@ -40,21 +41,21 @@ namespace AppServidor.Servicios
             };
         }
 
-        // 4. Nombre del equipo
+        // 2. Nombre del equipo
         public static object GetMachineName()
         {
             return new { machine_name = Environment.MachineName };
         }
            
 
-        // 9. Usuario actual
+        // 3. Usuario actual
         public static object GetUserInfo()
         {
             return new { user = Environment.UserName };
         }
            
 
-        // 5. Información del procesador
+        // 4. Información del procesador
         public static object GetProcessorInfo()
         {
             return new
@@ -64,7 +65,7 @@ namespace AppServidor.Servicios
             };
         }
 
-        // 6. Total RAM (GB)
+        // 5. Total RAM (GB)
         public static object GetRAM()
         {
             double ramGB = 0;
@@ -84,7 +85,7 @@ namespace AppServidor.Servicios
             return new { ram_total_gb = ramGB };
         }
 
-        // 7. Lista de unidades de disco
+        // 6. Lista de unidades de disco
         public static object GetDisks()
         {
             return DriveInfo.GetDrives()
@@ -99,7 +100,7 @@ namespace AppServidor.Servicios
                 }).ToList();
         }
 
-        // 8. Resolución de pantalla usando libreria nativa de Windows
+        // 7. Resolución de pantalla usando libreria nativa de Windows
         public static object GetResolution()
         {
             try
@@ -118,7 +119,7 @@ namespace AppServidor.Servicios
             }
         }
 
-        // 10. Zona horaria y 11. Fecha/Hora
+        // 8. Zona horaria y 9. Fecha/Hora
         public static object GetTime()
         {
             return new
@@ -128,7 +129,7 @@ namespace AppServidor.Servicios
             };
         }
 
-        // 12. Lista de procesos activos
+        // 10. Lista de procesos activos
         public static object GetProcesses()
         {
             return Process.GetProcesses()

@@ -5,8 +5,10 @@ using System.Windows.Forms;
 
 namespace AppServidor.Servicios
 {
+    //Clase que contiene metodos de accion remota como Controlar Mouse y Mandar Mensaje
     public static class AccionesRemotas
     {
+        //En este metodo obtenemos la pantalla, la copiamos en un mapa de bits y se convierte en base64 que son los datos de imagen.
         public static string TomarScreenshot()
         {
             try
@@ -16,7 +18,7 @@ namespace AppServidor.Servicios
                 using (Bitmap bmp = new Bitmap(bounds.Width, bounds.Height))
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
-                    // ESTA ES LA LINEA CORRECTA
+                    // Obtener o dibujar pantalla
                     g.CopyFromScreen(bounds.X,bounds.Y, 0,0,bounds.Size,CopyPixelOperation.SourceCopy);
 
                     using (MemoryStream ms = new MemoryStream())
@@ -28,11 +30,12 @@ namespace AppServidor.Servicios
             }
             catch (Exception ex)
             {
-                // MUY IMPORTANTE: nunca rompas el JSON. Devuelve un texto.
+                
                 return $"ERROR_SCREENSHOT:{ex.Message}";
             }
         }
-
+        //Metodo para enviar mensaje
+        //Simplemente se le muestra un cuadro de texto al usuario con un mensaje
         public static string MostrarMensaje(string texto)
         {
             try

@@ -50,7 +50,7 @@ namespace AppClienteControlador
                     _ = client.EnviarSimple(cmd);
             });
 
-            client.ConexionCerrada += ServidorDesconectado;
+            client.ConexionCerrada += ServidorDesconectado; //Detectar conexion cerrada
         }
 
         //Llenar el combo box los nombres relacionados a los comandos mas que todo para entendimiento del usuario
@@ -62,8 +62,10 @@ namespace AppClienteControlador
         }
 
         //Metodos para realizar la conexion - por defecto tendra la local, el usuario puede cambiar la Ip
+        //Tambien por defecto se usara el puerto 8000 pero se puede usar otro de preferencia siempre y cuando no este ocupado
         private async void btn_conectar_Click(object sender, EventArgs e)
         {
+            //Obtenemos la ip y el puerto (se hace un cast a Int)
             string ip = txt_ip.Text.Trim();
 
             if (!int.TryParse(txt_puerto.Text, out int puerto))
@@ -74,9 +76,9 @@ namespace AppClienteControlador
 
             btn_conectar.Enabled = false;
             label4.Text = "Conectando...";
-            label4.ForeColor = Color.Goldenrod;
+            label4.ForeColor = Color.Goldenrod; //Para diferenciar la accion 
 
-            bool ok = await client.Conectar(ip, puerto);
+            bool ok = await client.Conectar(ip, puerto); //Espera la respuesta del servidor
 
             btn_conectar.Enabled = true;
 
@@ -91,7 +93,7 @@ namespace AppClienteControlador
                 label4.ForeColor = Color.Red;
             }
         }
-
+        //Metodo para desconectarse del servidor
         private void btn_desconectar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -197,6 +199,7 @@ namespace AppClienteControlador
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
 
+        //Metodo para detener el control remoto a traves del mouse
         private void button2_Click(object sender, EventArgs e) // Detener
         {
 
@@ -217,7 +220,7 @@ namespace AppClienteControlador
             await client.Enviar("MOVE_MOUSE", new { x = pos.X, y = pos.Y });
         }
 
-        // CLICS
+        // Deteccion de los clicls
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
@@ -342,7 +345,7 @@ namespace AppClienteControlador
 
             try
             {
-                // convertir datos a JsonElement por cuestiones de facilidad al enviar respuestas complejas
+                // Usar JSON para convertir un Json en el objeto original enviado por el servidor
                 JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
                     JsonSerializer.Serialize(respuesta.Datos)
                 );
@@ -455,5 +458,9 @@ namespace AppClienteControlador
                 ventanaCaptura.Close();
         }
 
+        private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
     }
 }

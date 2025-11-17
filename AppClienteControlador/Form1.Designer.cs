@@ -59,6 +59,7 @@ namespace AppClienteControlador
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.Mensaje = new System.Windows.Forms.GroupBox();
             this.txt_mensaje = new System.Windows.Forms.TextBox();
+            this.Silenciar = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -97,6 +98,7 @@ namespace AppClienteControlador
             this.btn_conectar.Name = "btn_conectar";
             this.btn_conectar.Size = new System.Drawing.Size(82, 23);
             this.btn_conectar.TabIndex = 2;
+            this.btn_conectar.Tag = "Conectar";
             this.btn_conectar.Text = "Conectar";
             this.btn_conectar.UseVisualStyleBackColor = false;
             this.btn_conectar.Click += new System.EventHandler(this.btn_conectar_Click);
@@ -361,6 +363,10 @@ namespace AppClienteControlador
             this.txt_mensaje.Size = new System.Drawing.Size(388, 33);
             this.txt_mensaje.TabIndex = 19;
             // 
+            // Silenciar
+            // 
+            this.Silenciar.ToolTipTitle = "Silenciar";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -418,6 +424,7 @@ namespace AppClienteControlador
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox Mensaje;
         private System.Windows.Forms.TextBox txt_mensaje;
+        private System.Windows.Forms.ToolTip Silenciar;
     }
 
 }

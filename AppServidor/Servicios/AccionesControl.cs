@@ -2,6 +2,9 @@
 
 namespace AppServidor.Servicios
 {
+    //Clase que contiene un metodo para controlar el mouse
+    //Se usa una libreria externa de windows
+    //Se usan los codigos asignados cuando se quiere hacer alguna cosa ya sea mover el mouse o hacer clicks
     public static class AccionesControl
     {
         [DllImport("user32.dll")]

@@ -15,8 +15,9 @@ namespace AppClienteControlador
 
         public bool Conectado => cliente != null && cliente.Connected;
 
-        public event Action ConexionCerrada;
+        public event Action ConexionCerrada; //Sirve para modificar el servidor
 
+        //Metodo simple para conectarse al servidor
         public async Task<bool> Conectar(string ip, int puerto)
         {
             try
@@ -38,6 +39,7 @@ namespace AppClienteControlador
             }
         }
 
+        //Metodo para enviar una solicitud al servidor en formato JSON
         public async Task Enviar(MensajesIO solicitud)
         {
             if (writer != null)
@@ -47,6 +49,7 @@ namespace AppClienteControlador
             }
         }
 
+        //Este metodo se usa cuando el comando a pasar no necesita parametros
         public async Task<MensajesIO> EnviarSimple(string comando)
         {
             var solicitud = new MensajesIO(comando, true, null, "", "Cliente");
@@ -54,6 +57,7 @@ namespace AppClienteControlador
             return await Recibir();
         }
 
+        //Si la accion que recibe comandos usa parametros se usa este metodo
         public async Task<MensajesIO> Enviar(string comando, object datos)
         {
             var solicitud = new MensajesIO(comando, true, datos, "", "Cliente");
@@ -61,6 +65,7 @@ namespace AppClienteControlador
             return await Recibir();
         }
 
+        //Recibe lo que el envia el servidor, el formato lo recibe en estructura JSON
         public async Task<MensajesIO> Recibir()
         {
             try
@@ -73,7 +78,7 @@ namespace AppClienteControlador
 
                 string respuesta = await reader.ReadLineAsync();
 
-                // 🔥 Si el servidor se cayó: apagado / reinicio / logout / cierre app
+                // Si el servidor se cayó: apagado / reinicio / logout / cierre app
                 if (respuesta == null)
                 {
                     ConexionCerrada?.Invoke();
@@ -92,6 +97,7 @@ namespace AppClienteControlador
             }
         }
 
+        //Metodo para desconectarse del servidor --el cliente debe desconectarse manualmente del servidor
         public void Desconectar()
         {
             try

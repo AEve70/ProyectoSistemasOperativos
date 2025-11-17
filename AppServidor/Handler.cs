@@ -8,6 +8,8 @@ using AppServidor.Servicios;
 
 namespace AppServidor
 {
+    //El Handler es un manejador de las acciones del servidor
+    //Lee las solicitudes del usuario y las atiende
     public class Handler
     {
         private readonly TcpClient cliente;
@@ -17,6 +19,7 @@ namespace AppServidor
             this.cliente = cliente;
         }
 
+        //Como se usan hilos se hizo un metodo Run para la conexion
         public void Run()
         {
             try
@@ -34,16 +37,17 @@ namespace AppServidor
                     MensajesIO solicitud;
                     try
                     {
-                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea);
+                        solicitud = JsonSerializer.Deserialize<MensajesIO>(linea); //Convierte un JSON en objeto 
                     }
                     catch
                     {
                         writer.WriteLine(JsonSerializer.Serialize(
-                            new MensajesIO("ERROR", false, null, "JSON inválido", "Servidor")
+                            new MensajesIO("ERROR", false, null, "JSON inválido", "Servidor") //En caso de una mala estructura
                         ));
                         continue;
                     }
 
+                    //Comprobar que se envie un comando
                     if (solicitud == null || string.IsNullOrWhiteSpace(solicitud.Comando))
                     {
                         writer.WriteLine(JsonSerializer.Serialize(
@@ -64,7 +68,7 @@ namespace AppServidor
                         respuesta = new MensajesIO(solicitud.Comando, false, null, ex.Message, "Servidor");
                     }
 
-                    writer.WriteLine(JsonSerializer.Serialize(respuesta));
+                    writer.WriteLine(JsonSerializer.Serialize(respuesta)); //Convierte el objeto a JSON
                 }
             }
             catch (Exception e)
@@ -77,6 +81,7 @@ namespace AppServidor
             }
         }
 
+        //Este metodo realiza las solicitudes del usuario
         private object ProcesarComando(string comando, object datos)
         {
             switch (comando.ToUpper())
