@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace AppClienteControlador
         private FormScrenshot ventanaCaptura;
         private HookMouse hook;
 
+        // 🔥 Cola de eventos para el hook global (NO ASYNC dentro del hook)
+        private ConcurrentQueue<string> ColaEventos = new ConcurrentQueue<string>();
 
         // Diccionario visible al usuario → comando interno real
         private readonly Dictionary<string, string> comandos = new Dictionary<string, string>()
@@ -53,8 +56,9 @@ namespace AppClienteControlador
             //Para uso del mouse 
             hook = new HookMouse(cmd =>
             {
+                // 🔥 Importante: el hook global NO puede ejecutar async/await
                 if (ControlRemoto && client.Conectado)
-                    _ = client.EnviarSimple(cmd);
+                    ColaEventos.Enqueue(cmd);
             });
 
             client.ConexionCerrada += ServidorDesconectado; //Detectar conexion cerrada
@@ -72,7 +76,6 @@ namespace AppClienteControlador
         //Tambien por defecto se usara el puerto 8000 pero se puede usar otro de preferencia siempre y cuando no este ocupado
         private async void btn_conectar_Click(object sender, EventArgs e)
         {
-            //Obtenemos la ip y el puerto (se hace un cast a Int)
             string ip = txt_ip.Text.Trim();
 
             if (!int.TryParse(txt_puerto.Text, out int puerto))
@@ -83,9 +86,9 @@ namespace AppClienteControlador
 
             btn_conectar.Enabled = false;
             label4.Text = "Conectando...";
-            label4.ForeColor = Color.Goldenrod; //Para diferenciar la accion 
+            label4.ForeColor = Color.Goldenrod;
 
-            bool ok = await client.Conectar(ip, puerto); //Espera la respuesta del servidor
+            bool ok = await client.Conectar(ip, puerto);
 
             btn_conectar.Enabled = true;
 
@@ -100,6 +103,7 @@ namespace AppClienteControlador
                 label4.ForeColor = Color.Red;
             }
         }
+
         //Metodo para desconectarse del servidor
         private void btn_desconectar_Click(object sender, EventArgs e)
         {
@@ -117,7 +121,6 @@ namespace AppClienteControlador
         }
 
         //Metodos para obtener informacion del equipo remoto
-
         private async void btn_consultar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -139,7 +142,6 @@ namespace AppClienteControlador
         }
 
         // Controles de volumen
-
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
             await EnviarSimple("VOL_UP");
@@ -172,17 +174,14 @@ namespace AppClienteControlador
         }
 
         // Metodos del sistema apagar-reiniciar-cerrar sesion
-
         private async void btn_apagar_Click(object sender, EventArgs e)
         {
             await EnviarSimple("SHUTDOWN");
         }
-
         private async void btn_reiniciar_Click(object sender, EventArgs e)
         {
             await EnviarSimple("REBOOT");
         }
-
         private async void btn_cerrarSesion_Click(object sender, EventArgs e)
         {
             await EnviarSimple("LOGOUT");
@@ -203,16 +202,21 @@ namespace AppClienteControlador
             timer_mouse.Interval = 40;
             timer_mouse.Start();
 
+            
+            timer_eventos.Interval = 15;
+            timer_eventos.Start();
+
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
 
         //Metodo para detener el control remoto a traves del mouse
         private void button2_Click(object sender, EventArgs e) // Detener
         {
-
             ControlRemoto = false;
             hook?.Desinstalar();
+
             timer_mouse.Stop();
+            timer_eventos.Stop();
 
             richTextBox1.Text = "Control remoto DETENIDO.";
         }
@@ -227,7 +231,19 @@ namespace AppClienteControlador
             await client.Enviar("MOVE_MOUSE", new { x = pos.X, y = pos.Y });
         }
 
-        // Deteccion de los clicls
+        // Envío seguro de clics generados por el hook
+        private async void timer_eventos_Tick(object sender, EventArgs e)
+        {
+            if (!ControlRemoto || !client.Conectado)
+                return;
+
+            while (ColaEventos.TryDequeue(out string cmd))
+            {
+                await client.EnviarSimple(cmd);
+            }
+        }
+
+        // Deteccion de los clicks dentro del formulario
         protected override void WndProc(ref Message m)
         {
             const int WM_LBUTTONDOWN = 0x0201;
@@ -255,9 +271,7 @@ namespace AppClienteControlador
             }
         }
 
-
         // Captura de pantalla
-
         private async void btn_screenshot_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -266,13 +280,11 @@ namespace AppClienteControlador
                 return;
             }
 
-            // pedir la captura al servidor
             var solicitud = new MensajesIO("GET_SCREENSHOT", true, null, "", "Cliente");
             await client.Enviar(solicitud);
 
             var respuesta = await client.Recibir();
 
-            // usar el helper para mostrarla
             MostrarCaptura(respuesta);
         }
 
@@ -287,7 +299,6 @@ namespace AppClienteControlador
                     return;
                 }
 
-                // Datos → JsonElement
                 JsonElement root = JsonSerializer.Deserialize<JsonElement>(
                     JsonSerializer.Serialize(respuesta.Datos));
 
@@ -304,11 +315,10 @@ namespace AppClienteControlador
                 {
                     Image img = Image.FromStream(ms);
 
-                    // si la ventana no existe o está cerrada, la creamos
                     if (ventanaCaptura == null || ventanaCaptura.IsDisposed)
                         ventanaCaptura = new FormScrenshot();
 
-                    ventanaCaptura.mostrarCaptura(img); // aquí adentro usás el PictureBox
+                    ventanaCaptura.mostrarCaptura(img);
                     ventanaCaptura.Show();
                     ventanaCaptura.BringToFront();
                 }
@@ -320,7 +330,6 @@ namespace AppClienteControlador
         }
 
         // metodo basico para mostrar un mensaje
-
         private async void btn_message_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -344,7 +353,6 @@ namespace AppClienteControlador
         }
 
         // Como las solicitudes y respuestas estan en formato JSON, se necesita convertir esa estructura en un String común para ser legible al usuario
-
         private string TraducirRespuesta(MensajesIO respuesta)
         {
             if (respuesta == null || respuesta.Datos == null)
@@ -352,13 +360,10 @@ namespace AppClienteControlador
 
             try
             {
-                // Usar JSON para convertir un Json en el objeto original enviado por el servidor
                 JsonElement elem = JsonSerializer.Deserialize<JsonElement>(
-                    JsonSerializer.Serialize(respuesta.Datos)
-                );
+                    JsonSerializer.Serialize(respuesta.Datos));
 
                 string cmd = respuesta.Comando.ToUpper();
-
                 string texto;
 
                 switch (cmd)
@@ -419,7 +424,6 @@ namespace AppClienteControlador
             }
         }
 
-
         private static string TraducirDiscos(JsonElement elem)
         {
             string t = "Discos detectados:\n";
@@ -455,6 +459,7 @@ namespace AppClienteControlador
 
             ControlRemoto = false;
             timer_mouse.Stop();
+            timer_eventos.Stop();
 
             label4.Text = "Desconectado";
             label4.ForeColor = Color.Red;
@@ -465,14 +470,7 @@ namespace AppClienteControlador
                 ventanaCaptura.Close();
         }
 
-        private void toolTip1_Popup(object sender, PopupEventArgs e)
-        {
-
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void toolTip1_Popup(object sender, PopupEventArgs e) { }
+        private void label4_Click(object sender, EventArgs e) { }
     }
 }

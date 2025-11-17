@@ -60,6 +60,7 @@ namespace AppClienteControlador
             this.Mensaje = new System.Windows.Forms.GroupBox();
             this.txt_mensaje = new System.Windows.Forms.TextBox();
             this.Silenciar = new System.Windows.Forms.ToolTip(this.components);
+            this.timer_eventos = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -426,6 +427,7 @@ namespace AppClienteControlador
         private System.Windows.Forms.GroupBox Mensaje;
         private System.Windows.Forms.TextBox txt_mensaje;
         private System.Windows.Forms.ToolTip Silenciar;
+        private System.Windows.Forms.Timer timer_eventos;
     }
 
 }
