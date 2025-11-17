@@ -76,11 +76,11 @@ namespace AppServidor
                         continue;
                     }
 
-                    //🔥🔥🔥 NO ENVIAR RESPUESTA SI ES CONTROL REMOTO 🔥🔥🔥
+                    //Mover el mouse no necesita obtener respuestas
                     if (solicitud.Comando.StartsWith("MOVE_") ||
                         solicitud.Comando.StartsWith("MOUSE_"))
                     {
-                        continue; // NO enviar nada → evita saturación y desconexión
+                        continue; // Simplemente que continue con el flujo normal
                     }
 
                     //Enviar respuesta normal

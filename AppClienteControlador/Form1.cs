@@ -108,7 +108,7 @@ namespace AppClienteControlador
             richTextBox1.Clear();
         }
 
-        // CONSULTAR INFORMACIÓN
+        // CONSULTAR INFORMACION DEL EQUIPO
         private async void btn_consultar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -143,9 +143,9 @@ namespace AppClienteControlador
             }
         }
 
-        // ======================
+        
         // CONTROLES DE VOLUMEN
-        // ======================
+        
         private async void btn_subirVolumen_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -228,9 +228,9 @@ namespace AppClienteControlador
             }
         }
 
-        // ======================
-        // ACCIONES DE SISTEMA
-        // ======================
+        
+        // ACCIONES DE SISTEMA: Apagar, reiniciar, encender
+        
         private async void btn_apagar_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -285,6 +285,7 @@ namespace AppClienteControlador
             }
         }
 
+        
         private async void btn_cerrarSesion_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -313,9 +314,9 @@ namespace AppClienteControlador
             }
         }
 
-        // ======================
+        // 
         // CONTROL REMOTO
-        // ======================
+        
         private void button1_Click(object sender, EventArgs e) // Activar
         {
             if (!client.Conectado)
@@ -326,12 +327,12 @@ namespace AppClienteControlador
 
             ControlRemoto = true;
 
-            timer_mouse.Interval = 70; // FPS moderado
+            timer_mouse.Interval = 70; // 14FPS 
             timer_mouse.Start();
 
             richTextBox1.Text = "Control remoto ACTIVADO.";
         }
-
+        //Boton para detener control remoto
         private void button2_Click(object sender, EventArgs e) // Detener
         {
             if (!client.Conectado)
@@ -353,15 +354,16 @@ namespace AppClienteControlador
             Point pos = Cursor.Position;
 
             // Enviar solo si el movimiento es real
-            if (Math.Abs(pos.X - ultimoEnvio.X) < 2 && Math.Abs(pos.Y - ultimoEnvio.Y) < 2)
+            if (Math.Abs(pos.X - ultimoEnvio.X) < 2 &&
+                Math.Abs(pos.Y - ultimoEnvio.Y) < 2)
                 return;
 
-            ultimoEnvio = pos;
-
-            // Handler no responde a MOVE_MOUSE → no hay Recibir() → no falla
             await client.Enviar(
                 new MensajesIO("MOVE_MOUSE", true, new { x = pos.X, y = pos.Y }, "", "Cliente")
             );
+
+            //Evitar saturar el Socket
+            ultimoEnvio = pos;
         }
 
         protected override void WndProc(ref Message m)
@@ -391,9 +393,9 @@ namespace AppClienteControlador
             }
         }
 
-        // ======================
+        // 
         // CAPTURA DE PANTALLA
-        // ======================
+        // 
         private async void btn_screenshot_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -425,6 +427,7 @@ namespace AppClienteControlador
             }
         }
 
+        //Helper para mostrar la captura, obtiene los bytes de la imagen y los pasa a base64(formato de imagen)
         private void MostrarCaptura(MensajesIO respuesta)
         {
             try
@@ -465,9 +468,9 @@ namespace AppClienteControlador
             }
         }
 
-        // ======================
+        // 
         // ENVIAR MENSAJE REMOTO
-        // ======================
+        // 
         private async void btn_message_Click(object sender, EventArgs e)
         {
             if (!client.Conectado)
@@ -503,9 +506,8 @@ namespace AppClienteControlador
             }
         }
 
-        // ======================
-        // TRADUCIR RESPUESTAS
-        // ======================
+        
+        // TRADUCIR RESPUESTAS es decir de JSON a Objeto y hacerlas un String legible 
         private string TraducirRespuesta(MensajesIO respuesta)
         {
             if (respuesta == null || respuesta.Datos == null)
@@ -600,10 +602,9 @@ namespace AppClienteControlador
             }
             return t;
         }
-
-        // ======================
+ 
         // DETECTAR DESCONECCIÓN
-        // ======================
+        
         private void ServidorDesconectado()
         {
             if (InvokeRequired)

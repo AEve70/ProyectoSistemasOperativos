@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 namespace AppClienteControlador
 {
     //Ayuda a imitar el control del mouse en la computadora servidor como si fuera el cliente
+    //Esta por referencia pero se quito porque necesita permisos y causó desconexiones y saturacion
     public class HookMouse
     {
         //Importar librerias de user32
