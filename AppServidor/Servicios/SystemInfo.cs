@@ -5,6 +5,12 @@ using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace AppServidor.Servicios
 {   //Clase que sirve para obtener datos del equipo remoto 
     //En la mayoria de los casos devuelve objetos 

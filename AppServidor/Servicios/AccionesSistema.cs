@@ -5,6 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace AppServidor.Servicios
 {
     //Clase para las acciones de apagar, reiniciar, cerrar sesion, mover el mouse

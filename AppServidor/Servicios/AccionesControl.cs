@@ -1,5 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace AppServidor.Servicios
 {
     //Clase que contiene un metodo para controlar el mouse

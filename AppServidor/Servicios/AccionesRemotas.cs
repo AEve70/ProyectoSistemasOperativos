@@ -3,6 +3,12 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace AppServidor.Servicios
 {
     //Clase que contiene metodos de accion remota como Controlar Mouse y Mandar Mensaje

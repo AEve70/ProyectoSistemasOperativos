@@ -5,6 +5,12 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace AppClienteControlador
 {
     public class Cliente

@@ -8,6 +8,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Compartido;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
+//Interfaz grafica donde el cliente le hara solicitudes al servidor y se mostraran las respuestas del mismo
 namespace AppClienteControlador
 {
     public partial class Form1 : Form

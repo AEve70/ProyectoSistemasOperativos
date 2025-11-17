@@ -1,5 +1,11 @@
 ﻿using System;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace Compartido
 {   //Clase para pasar informacion entre el cliente y servidor
     //Se usa estructura JSON ya que es más sencillo para enviar informacion (en este proyecto se usan objetos anonimos)

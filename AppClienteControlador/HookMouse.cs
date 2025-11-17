@@ -2,6 +2,12 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+/* Proyecto Sistemas Operativos
+ * Sebastián Alfaro Arias C4C212
+ * Alejandro Córdoba Solís C4E463 
+ * Evelyn Martinez Hernández C34617
+ */
+
 namespace AppClienteControlador
 {
     //Ayuda a imitar el control del mouse en la computadora servidor como si fuera el cliente
